@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Student Result - EMIFORPHS CBT{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center h-[calc(100vh-130px)] w-full py-2">
+    <div class="glass-card rounded-xl overflow-hidden max-w-4xl w-full p-5">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+            <div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
+                        <i class="fas fa-user text-teal-400 text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">{{ student.get_full_name }}</h2>
+                        <p class="text-white/40 text-[10px]">@{{ student.username }} • {{ exam.title }} • {{ exam.class_level }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-2xl font-bold text-teal-300">{{ score }}/{{ total }}</div>
+                <div class="text-[10px] text-white/40">{{ percentage }}%</div>
+            </div>
+        </div>
+
+        <!-- Score Summary -->
+        <div class="flex items-center gap-4 mb-3 bg-white/5 border border-white/10 rounded-lg p-3">
+            <div class="flex-1 text-center">
+                <div class="text-[10px] text-white/40">Score</div>
+                <div class="text-lg font-bold text-white">{{ score }}</div>
+            </div>
+            <div class="w-px h-8 bg-white/10"></div>
+            <div class="flex-1 text-center">
+                <div class="text-[10px] text-white/40">Total</div>
+                <div class="text-lg font-bold text-white">{{ total }}</div>
+            </div>
+            <div class="w-px h-8 bg-white/10"></div>
+            <div class="flex-1 text-center">
+                <div class="text-[10px] text-white/40">Correct</div>
+                <div class="text-lg font-bold text-emerald-400">{{ correct_count }}</div>
+            </div>
+            <div class="w-px h-8 bg-white/10"></div>
+            <div class="flex-1 text-center">
+                <div class="text-[10px] text-white/40">Wrong</div>
+                <div class="text-lg font-bold text-red-400">{{ wrong_count }}</div>
+            </div>
+            <div class="w-px h-8 bg-white/10"></div>
+            <div class="flex-1 text-center">
+                <div class="text-[10px] text-white/40">Status</div>
+                <span class="text-xs font-bold {% if percentage >= 70 %}text-emerald-400{% elif percentage >= 40 %}text-yellow-400{% else %}text-red-400{% endif %}">
+                    {% if percentage >= 70 %}✅ PASSED{% elif percentage >= 40 %}📝 AVERAGE{% else %}❌ FAILED{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Question Review -->
+        <div class="max-h-[calc(100vh-360px)] overflow-y-auto pr-1 space-y-2">
+            <h4 class="text-xs font-semibold text-white/60 mb-2">Question Review</h4>
+            {% for q_data in question_data %}
+                <div class="bg-white/5 border border-white/10 rounded-lg p-2">
+                    <div class="flex items-start gap-2">
+                        <span class="text-[10px] font-bold text-teal-300 bg-teal-500/20 px-2 py-0.5 rounded-full border border-teal-500/20 flex-shrink-0">
+                            Q{{ q_data.question.question_number }}
+                        </span>
+                        <div class="flex-1">
+                            <p class="text-xs text-white mb-1">{{ q_data.question.text }}</p>
+                            <div class="grid grid-cols-2 gap-1 text-[10px]">
+                                <div class="{% if q_data.question.correct_answer == 'A' %}text-emerald-400{% else %}text-white/40{% endif %}">
+                                    A: {{ q_data.question.option_a }}
+                                    {% if q_data.question.correct_answer == 'A' %} ✅{% endif %}
+                                </div>
+                                <div class="{% if q_data.question.correct_answer == 'B' %}text-emerald-400{% else %}text-white/40{% endif %}">
+                                    B: {{ q_data.question.option_b }}
+                                    {% if q_data.question.correct_answer == 'B' %} ✅{% endif %}
+                                </div>
+                                <div class="{% if q_data.question.correct_answer == 'C' %}text-emerald-400{% else %}text-white/40{% endif %}">
+                                    C: {{ q_data.question.option_c }}
+                                    {% if q_data.question.correct_answer == 'C' %} ✅{% endif %}
+                                </div>
+                                <div class="{% if q_data.question.correct_answer == 'D' %}text-emerald-400{% else %}text-white/40{% endif %}">
+                                    D: {{ q_data.question.option_d }}
+                                    {% if q_data.question.correct_answer == 'D' %} ✅{% endif %}
+                                </div>
+                            </div>
+                            <div class="mt-1 text-[10px] flex items-center gap-2">
+                                <span class="text-white/40">Student answer:</span>
+                                <span class="{% if q_data.is_correct %}text-emerald-400{% else %}text-red-400{% endif %} font-medium">
+                                    {{ q_data.user_answer|default:"Not answered" }}
+                                </span>
+                                <span class="text-white/40">| Correct:</span>
+                                <span class="text-emerald-400 font-medium">{{ q_data.question.correct_answer }}</span>
+                                {% if q_data.is_correct %}
+                                    <span class="text-[8px] bg-emerald-500/30 text-emerald-300 px-1.5 py-0.5 rounded-full">✅ Correct</span>
+                                {% else %}
+                                    <span class="text-[8px] bg-red-500/30 text-red-300 px-1.5 py-0.5 rounded-full">❌ Wrong</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-3 text-center">
+            <a href="{% url 'teacher_dashboard:all_results' %}" class="text-white/40 hover:text-white/60 text-[10px] transition-colors">
+                <i class="fas fa-arrow-left mr-1"></i>Back to All Results
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% block title %}Taking Exam - EMIFORPHS CBT{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center h-[calc(100vh-130px)] w-full py-2">
+    <div class="glass-card rounded-xl overflow-hidden max-w-5xl w-full p-4">
+
+        <!-- Exam Header -->
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+            <div>
+                <h2 class="text-base font-bold text-white">{{ exam.title }}</h2>
+                <div class="flex items-center gap-2 text-[10px] text-white/40">
+                    <span><i class="fas fa-book mr-1"></i>{{ exam.subject.name }}</span>
+                    <span><i class="fas fa-users mr-1"></i>{{ exam.class_level|default:exam.category }}</span>
+                    <span><i class="fas fa-question-circle mr-1"></i>{{ total_questions }} Questions</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="text-[10px] text-white/40">Time Remaining</div>
+                    <div id="timer" class="text-xl font-bold text-teal-300 tabular-nums">--:--</div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <button type="submit" form="finish-form" class="bg-emerald-500/70 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-medium transition duration-200">
+                        <i class="fas fa-check mr-1"></i>Finish
+                    </button>
+                    <button onclick="quitExam()" class="bg-red-500/50 hover:bg-red-500 text-white px-3 py-0.5 rounded-lg text-[8px] font-medium transition duration-200">
+                        <i class="fas fa-times mr-1"></i>Quit
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Area -->
+        <div class="question-item bg-white/5 border border-white/10 rounded-lg p-3 mb-3">
+            <div class="flex items-start gap-2">
+                <span class="text-[10px] font-bold text-teal-300 bg-teal-500/20 px-2 py-0.5 rounded-full border border-teal-500/20 flex-shrink-0">
+                    Q{{ current_position|add:1 }}
+                </span>
+                <div class="flex-1">
+                    <p class="text-sm text-white mb-2">{{ question.text }}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                        {% for option in options %}
+                            <label class="flex items-center gap-2 p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer text-xs text-white/80">
+                                <input type="radio" name="answer" value="{{ option.label }}" 
+                                       class="w-3 h-3 text-teal-500 focus:ring-teal-500"
+                                       {% if selected_answer == option.label %}checked{% endif %}
+                                       data-question="{{ question.id }}">
+                                <span class="font-medium text-teal-300">{{ option.label }}.</span>
+                                <span>{{ option.text }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mt-3 pt-2 border-t border-white/10">
+            <div class="flex items-center justify-between text-[10px] text-white/40">
+                <span id="answered-count">{{ answers_count }}</span>
+                <span>of {{ total_questions }} answered</span>
+            </div>
+            <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
+                <div id="progress-bar" class="h-full rounded-full bg-teal-500 transition-all duration-300" style="width: {{ progress }}%;"></div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-white/10">
+            <div>
+                {% if current_position > 0 %}
+                    <a href="?q={{ current_position|add:-1 }}" class="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200">
+                        <i class="fas fa-arrow-left mr-1"></i>Previous
+                    </a>
+                {% endif %}
+            </div>
+            <div>
+                {% if not is_last %}
+                    <a href="?q={{ current_position|add:1 }}" class="btn-primary text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200 shadow-lg shadow-teal-500/25">
+                        Next <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Finish Form -->
+<form id="finish-form" method="post" action="{% url 'student_portal:finish_exam' attempt.id %}">
+    {% csrf_token %}
+    <input type="hidden" name="question_id" value="{{ question.id }}">
+    <input type="hidden" name="answer" id="finish-answer">
+</form>
+
+<!-- Quit Form -->
+<form id="quit-form" method="post" action="{% url 'student_portal:quit_exam' attempt.id %}">
+    {% csrf_token %}
+</form>
+
+<script>
+    // ============================================================
+    // TIMER
+    // ============================================================
+    let timeLeft = parseInt(sessionStorage.getItem('school_exam_time_left'));
+    const totalTime = {{ duration_minutes }} * 60;
+    
+    if (isNaN(timeLeft) || timeLeft <= 0) {
+        timeLeft = totalTime;
+        sessionStorage.setItem('school_exam_time_left', timeLeft);
+        sessionStorage.setItem('school_exam_total_time', totalTime);
+    }
+    
+    const storedTotal = parseInt(sessionStorage.getItem('school_exam_total_time'));
+    if (storedTotal !== totalTime) {
+        timeLeft = totalTime;
+        sessionStorage.setItem('school_exam_time_left', timeLeft);
+        sessionStorage.setItem('school_exam_total_time', totalTime);
+    }
+    
+    let timerInterval = null;
+    
+    function startTimer() {
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = 
+                String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                sessionStorage.removeItem('school_exam_time_left');
+                alert('Time is up! Your exam will be submitted automatically.');
+                // ✅ Auto-submit the finish form
+                document.getElementById('finish-form').submit();
+                return;
+            }
+            timeLeft--;
+            sessionStorage.setItem('school_exam_time_left', timeLeft);
+        }
+        
+        timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+    }
+    
+    function clearTimer() {
+        clearInterval(timerInterval);
+        sessionStorage.removeItem('school_exam_time_left');
+        sessionStorage.removeItem('school_exam_total_time');
+    }
+
+    // ============================================================
+    // RADIO BUTTON - AUTO SAVE VIA AJAX
+    // ============================================================
+    document.querySelectorAll('input[name="answer"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const questionId = {{ question.id }};
+            const answer = this.value;
+            
+            // Save via AJAX
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch("{% url 'student_portal:save_answer' attempt.id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `question_id=${questionId}&answer=${answer}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ Answer saved:', questionId, answer);
+                    // Update progress bar
+                    fetch("{% url 'student_portal:get_progress' attempt.id %}")
+                        .then(res => res.json())
+                        .then(data => {
+                            document.getElementById('answered-count').textContent = data.answered;
+                            const percentage = (data.answered / data.total) * 100;
+                            document.getElementById('progress-bar').style.width = percentage + '%';
+                        });
+                }
+            })
+            .catch(error => console.error('Error saving answer:', error));
+        });
+    });
+
+    // ============================================================
+    // QUIT EXAM
+    // ============================================================
+    function quitExam() {
+        const confirmQuit = confirm(
+            'Are you sure you want to quit this exam?\n\n' +
+            'Your current progress will be saved and you will see your performance analysis.'
+        );
+        if (confirmQuit) {
+            clearTimer();
+            document.getElementById('quit-form').submit();
+        }
+    }
+
+    // ============================================================
+    // START EXAM
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        startTimer();
+        console.log('✅ School exam started');
+        console.log('⏱️ Time remaining: ' + Math.floor(timeLeft / 60) + ':' + String(timeLeft % 60).padStart(2, '0'));
+    });
+</script>
+
+<!-- ============================================================
+HIDDEN DATA FOR WARNING MODAL - ACCURATE COUNTS
+============================================================ -->
+<div style="display: none;">
+    <span id="exam-answered-count">{{ answers_count }}</span>
+    <span id="exam-total-questions">{{ total_questions }}</span>
+    <span id="exam-unanswered-count">{{ total_questions|add:answers_count|add:"-" }}</span>
+</div>
+
+{% endblock %}

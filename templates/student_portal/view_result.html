@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block title %}Result - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-5xl mx-auto px-2 py-2">
+    <div class="glass-card rounded-xl overflow-hidden">
+
+        <!-- ============================================================
+        COMPACT HEADER
+        ============================================================ -->
+        <div class="bg-gradient-to-r from-teal-600/40 to-emerald-600/40 px-4 py-2.5 border-b border-white/15 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-teal-500/30 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-file-alt text-teal-300 text-sm"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold text-white leading-tight drop-shadow-lg">{{ exam.title }}</h2>
+                    <p class="text-[9px] text-white/60 drop-shadow">
+                        {% if exam.subject %}
+                            {{ exam.subject.name }} • {{ exam.class_level|default:exam.category }}
+                        {% else %}
+                            {{ exam.category }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="text-xl font-bold text-teal-300 drop-shadow-lg">{{ score }}/{{ total }}</div>
+                    <div class="text-[9px] text-white/50 drop-shadow">{{ percentage }}%</div>
+                </div>
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base
+                            {% if percentage >= 70 %}bg-emerald-500/30 border border-emerald-500/40 shadow-lg shadow-emerald-500/20
+                            {% elif percentage >= 40 %}bg-yellow-500/30 border border-yellow-500/40 shadow-lg shadow-yellow-500/20
+                            {% else %}bg-red-500/30 border border-red-500/40 shadow-lg shadow-red-500/20{% endif %}">
+                    {% if percentage >= 70 %}🎉{% elif percentage >= 40 %}📈{% else %}💪{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        COMPACT STATS
+        ============================================================ -->
+        <div class="grid grid-cols-4 gap-1 px-4 py-1.5 bg-white/10 border-b border-white/10">
+            <div class="text-center">
+                <div class="text-[7px] text-white/50 uppercase tracking-wider drop-shadow">Score</div>
+                <div class="text-sm font-bold text-white drop-shadow-lg">{{ score }}</div>
+            </div>
+            <div class="text-center border-l border-white/15">
+                <div class="text-[7px] text-white/50 uppercase tracking-wider drop-shadow">Total</div>
+                <div class="text-sm font-bold text-white drop-shadow-lg">{{ total }}</div>
+            </div>
+            <div class="text-center border-l border-white/15">
+                <div class="text-[7px] text-white/50 uppercase tracking-wider drop-shadow">Percentage</div>
+                <div class="text-sm font-bold drop-shadow-lg {% if percentage >= 70 %}text-emerald-400{% elif percentage >= 40 %}text-yellow-400{% else %}text-red-400{% endif %}">
+                    {{ percentage }}%
+                </div>
+            </div>
+            <div class="text-center border-l border-white/15">
+                <div class="text-[7px] text-white/50 uppercase tracking-wider drop-shadow">Status</div>
+                <span class="text-[8px] font-bold px-2 py-0.5 rounded-full inline-block drop-shadow
+                            {% if percentage >= 70 %}bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 shadow-lg shadow-emerald-500/20
+                            {% elif percentage >= 40 %}bg-yellow-500/30 text-yellow-300 border border-yellow-500/40 shadow-lg shadow-yellow-500/20
+                            {% else %}bg-red-500/30 text-red-300 border border-red-500/40 shadow-lg shadow-red-500/20{% endif %}">
+                    {% if percentage >= 70 %}✅ Passed{% elif percentage >= 40 %}📝 Avg{% else %}❌ Fail{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        SUBJECT TABS - Like Exam Interface
+        ============================================================ -->
+        <div class="flex flex-wrap gap-1.5 px-4 py-2 bg-white/5 border-b border-white/10">
+            {% for subject, stats in subject_stats.items %}
+                <button onclick="showSubjectTab('{{ subject|slugify }}')" 
+                        id="tab_{{ subject|slugify }}"
+                        class="subject-tab px-3 py-1 rounded-lg text-[10px] font-medium transition-all duration-200
+                               {% if forloop.first %}bg-teal-500/30 text-teal-300 border border-teal-500/40 shadow-lg shadow-teal-500/20{% else %}bg-white/5 text-white/60 border border-white/10 hover:bg-white/15{% endif %}">
+                    {{ subject }}
+                    <span class="ml-1 text-[8px] {% if forloop.first %}text-teal-300{% else %}text-white/30{% endif %}">
+                        ({{ stats.correct }}/{{ stats.total }})
+                    </span>
+                </button>
+            {% endfor %}
+        </div>
+
+        <!-- ============================================================
+        QUESTIONS - Filtered by Subject Tab
+        ============================================================ -->
+        <div id="questionContainer" class="p-2 max-h-[calc(100vh-320px)] overflow-y-auto custom-scroll">
+            {% for subject, stats in subject_stats.items %}
+                <div id="subject_{{ subject|slugify }}" class="subject-questions space-y-1.5 {% if not forloop.first %}hidden{% endif %}">
+                    <div class="text-[8px] text-white/40 px-1 mb-1 drop-shadow">
+                        {{ subject }} - {{ stats.correct }} correct, {{ stats.wrong }} wrong
+                    </div>
+                    {% for q_data in stats.questions %}
+                        <div class="question-item rounded-lg p-2 {% if q_data.is_correct %}border-l-3 border-emerald-500{% else %}border-l-3 border-red-500{% endif %} transition-all duration-200 shadow-sm">
+                            <div class="flex items-start gap-2">
+                                <span class="text-[8px] font-bold text-teal-300 bg-teal-500/30 px-1.5 py-0.5 rounded-full border border-teal-500/30 shadow-lg shadow-teal-500/10 flex-shrink-0 min-w-[20px] text-center drop-shadow">
+                                    Q{{ q_data.question.question_number }}
+                                </span>
+                                <div class="flex-1">
+                                    <p class="text-[10px] text-white/90 leading-relaxed drop-shadow">{{ q_data.question.text }}</p>
+                                    <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 mt-1 text-[8px]">
+                                        <div class="flex items-center gap-1 {% if q_data.question.correct_answer == 'A' %}text-emerald-400 drop-shadow{% elif q_data.user_answer == 'A' %}text-red-400 drop-shadow{% else %}text-white/60{% endif %}">
+                                            <span class="font-bold">A.</span>
+                                            <span class="truncate">{{ q_data.question.option_a|truncatechars:15 }}</span>
+                                            {% if q_data.question.correct_answer == 'A' %}<i class="fas fa-check-circle text-[6px] text-emerald-400 drop-shadow"></i>{% elif q_data.user_answer == 'A' %}<i class="fas fa-times-circle text-[6px] text-red-400 drop-shadow"></i>{% endif %}
+                                        </div>
+                                        <div class="flex items-center gap-1 {% if q_data.question.correct_answer == 'B' %}text-emerald-400 drop-shadow{% elif q_data.user_answer == 'B' %}text-red-400 drop-shadow{% else %}text-white/60{% endif %}">
+                                            <span class="font-bold">B.</span>
+                                            <span class="truncate">{{ q_data.question.option_b|truncatechars:15 }}</span>
+                                            {% if q_data.question.correct_answer == 'B' %}<i class="fas fa-check-circle text-[6px] text-emerald-400 drop-shadow"></i>{% elif q_data.user_answer == 'B' %}<i class="fas fa-times-circle text-[6px] text-red-400 drop-shadow"></i>{% endif %}
+                                        </div>
+                                        <div class="flex items-center gap-1 {% if q_data.question.correct_answer == 'C' %}text-emerald-400 drop-shadow{% elif q_data.user_answer == 'C' %}text-red-400 drop-shadow{% else %}text-white/60{% endif %}">
+                                            <span class="font-bold">C.</span>
+                                            <span class="truncate">{{ q_data.question.option_c|truncatechars:15 }}</span>
+                                            {% if q_data.question.correct_answer == 'C' %}<i class="fas fa-check-circle text-[6px] text-emerald-400 drop-shadow"></i>{% elif q_data.user_answer == 'C' %}<i class="fas fa-times-circle text-[6px] text-red-400 drop-shadow"></i>{% endif %}
+                                        </div>
+                                        <div class="flex items-center gap-1 {% if q_data.question.correct_answer == 'D' %}text-emerald-400 drop-shadow{% elif q_data.user_answer == 'D' %}text-red-400 drop-shadow{% else %}text-white/60{% endif %}">
+                                            <span class="font-bold">D.</span>
+                                            <span class="truncate">{{ q_data.question.option_d|truncatechars:15 }}</span>
+                                            {% if q_data.question.correct_answer == 'D' %}<i class="fas fa-check-circle text-[6px] text-emerald-400 drop-shadow"></i>{% elif q_data.user_answer == 'D' %}<i class="fas fa-times-circle text-[6px] text-red-400 drop-shadow"></i>{% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-[7px] mt-0.5 pt-0.5 border-t border-white/10">
+                                        <span class="text-white/50 drop-shadow">Your: <span class="{% if q_data.is_correct %}text-emerald-400{% else %}text-red-400{% endif %} font-bold drop-shadow">{{ q_data.user_answer|default:"-" }}</span></span>
+                                        <span class="text-white/20">|</span>
+                                        <span class="text-white/50 drop-shadow">Correct: <span class="text-emerald-400 font-bold drop-shadow">{{ q_data.question.correct_answer }}</span></span>
+                                        {% if q_data.is_correct %}
+                                            <span class="text-[6px] bg-emerald-500/40 text-emerald-300 px-1 py-0.5 rounded-full shadow-lg shadow-emerald-500/20">✅ Correct</span>
+                                        {% else %}
+                                            <span class="text-[6px] bg-red-500/40 text-red-300 px-1 py-0.5 rounded-full shadow-lg shadow-red-500/20">❌ Wrong</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- ============================================================
+        BACK BUTTON
+        ============================================================ -->
+        <div class="text-center py-2 border-t border-white/10 flex-shrink-0">
+            <a href="{% url 'student_portal:my_results' %}" class="text-white/50 hover:text-white/80 text-[9px] transition-colors inline-flex items-center gap-1 drop-shadow">
+                <i class="fas fa-arrow-left text-[8px]"></i> Back to Results
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+STYLES
+============================================================ -->
+<style>
+    .glass-card {
+        background: rgba(15, 23, 42, 0.75) !important;
+        backdrop-filter: blur(40px) !important;
+        -webkit-backdrop-filter: blur(40px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .drop-shadow {
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .drop-shadow-lg {
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .custom-scroll {
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+        width: 3px;
+        background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: transparent;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    .custom-scroll:hover::-webkit-scrollbar-thumb {
+        background: rgba(13, 148, 136, 0.4);
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(13, 148, 136, 0.6);
+    }
+    .custom-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+    }
+    .custom-scroll:hover {
+        scrollbar-color: rgba(13, 148, 136, 0.4) transparent;
+    }
+
+    .question-item {
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    .question-item:hover {
+        transform: translateX(4px);
+        background: rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .border-l-3.border-emerald-500 {
+        background: rgba(16, 185, 129, 0.12) !important;
+        border: 1px solid rgba(16, 185, 129, 0.15) !important;
+        box-shadow: 0 2px 15px rgba(16, 185, 129, 0.08) !important;
+    }
+    .border-l-3.border-emerald-500:hover {
+        background: rgba(16, 185, 129, 0.2) !important;
+        box-shadow: 0 4px 25px rgba(16, 185, 129, 0.15) !important;
+    }
+
+    .border-l-3.border-red-500 {
+        background: rgba(239, 68, 68, 0.12) !important;
+        border: 1px solid rgba(239, 68, 68, 0.15) !important;
+        box-shadow: 0 2px 15px rgba(239, 68, 68, 0.08) !important;
+    }
+    .border-l-3.border-red-500:hover {
+        background: rgba(239, 68, 68, 0.2) !important;
+        box-shadow: 0 4px 25px rgba(239, 68, 68, 0.15) !important;
+    }
+
+    .border-l-3 {
+        border-left-width: 3px;
+    }
+
+    .subject-tab {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .subject-tab:hover {
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 640px) {
+        .glass-card {
+            border-radius: 10px !important;
+        }
+        .question-item {
+            padding: 6px !important;
+        }
+        #questionContainer {
+            max-height: calc(100vh - 250px) !important;
+        }
+        .glass-card {
+            backdrop-filter: blur(30px) !important;
+            -webkit-backdrop-filter: blur(30px) !important;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        #questionContainer {
+            max-height: calc(100vh - 320px) !important;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // ============================================================
+        // SUBJECT TAB SWITCHING
+        // ============================================================
+        window.showSubjectTab = function(subjectId) {
+            // Hide all subject question containers
+            document.querySelectorAll('.subject-questions').forEach(function(el) {
+                el.classList.add('hidden');
+            });
+            
+            // Show the selected subject's questions
+            const target = document.getElementById('subject_' + subjectId);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+            
+            // Update tab styles
+            document.querySelectorAll('.subject-tab').forEach(function(tab) {
+                tab.className = 'subject-tab px-3 py-1 rounded-lg text-[10px] font-medium transition-all duration-200 bg-white/5 text-white/60 border border-white/10 hover:bg-white/15';
+                const span = tab.querySelector('span');
+                if (span) {
+                    span.className = 'ml-1 text-[8px] text-white/30';
+                }
+            });
+            
+            // Highlight the active tab
+            const activeTab = document.getElementById('tab_' + subjectId);
+            if (activeTab) {
+                activeTab.className = 'subject-tab px-3 py-1 rounded-lg text-[10px] font-medium transition-all duration-200 bg-teal-500/30 text-teal-300 border border-teal-500/40 shadow-lg shadow-teal-500/20';
+                const span = activeTab.querySelector('span');
+                if (span) {
+                    span.className = 'ml-1 text-[8px] text-teal-300';
+                }
+            }
+        };
+
+        // ============================================================
+        // KEYBOARD SHORTCUTS - Switch tabs with number keys
+        // ============================================================
+        document.addEventListener('keydown', function(e) {
+            const tabs = document.querySelectorAll('.subject-tab');
+            if (e.key >= '1' && e.key <= '9') {
+                const index = parseInt(e.key) - 1;
+                if (tabs[index]) {
+                    tabs[index].click();
+                    e.preventDefault();
+                }
+            }
+        });
+
+        console.log('%c📊 EMIFORPHS CBT - Result Viewer', 'font-size: 18px; font-weight: bold; color: #0d9488; text-shadow: 0 0 20px rgba(13,148,136,0.3);');
+        console.log('%c📚 Exam: {{ exam.title }}', 'font-size: 12px; color: #5eead4;');
+        console.log('%c🎯 Score: {{ score }}/{{ total }} ({{ percentage }}%)', 'font-size: 12px; color: #fcd34d;');
+        console.log('%c⌨️ Press 1-9 to switch subject tabs', 'font-size: 10px; color: #94a3b8;');
+
+    });
+</script>
+{% endblock %}

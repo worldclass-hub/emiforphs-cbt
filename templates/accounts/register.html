@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}Register - EMIFORPHS CBT{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center h-[calc(100vh-130px)] w-full py-2">
+    <div class="glass-card rounded-xl overflow-hidden max-w-3xl w-full flex flex-col md:flex-row">
+
+        <!-- Left Side - Branding (Compact) -->
+        <div class="hidden md:flex md:w-2/5 bg-gradient-to-br from-emerald-700/40 to-teal-800/40 p-4 flex-col justify-center items-center text-white backdrop-blur-sm border-r border-white/5">
+            <div class="text-center">
+                <img src="/static/img/new_emilia_logo.png" alt="EMIFORPHS Logo" class="w-14 h-auto mx-auto mb-2" />
+                <h2 class="text-lg font-bold mb-0">EMIFORPHS</h2>
+                <p class="text-emerald-200 text-[10px] font-medium tracking-widest uppercase mb-2">CBT EXAM PLATFORM</p>
+                <div class="w-10 h-0.5 bg-emerald-400 mx-auto rounded-full mb-3"></div>
+                <p class="text-white/50 text-[10px] leading-relaxed max-w-xs mx-auto">
+                    Join thousands of students succeeding with our CBT platform
+                </p>
+                <div class="mt-3 space-y-1.5 text-left w-full max-w-xs mx-auto">
+                    <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-lg p-1.5 border border-white/5">
+                        <i class="fas fa-check-circle text-emerald-400 text-[10px]"></i>
+                        <span class="text-[10px] text-white/70">Access to past questions</span>
+                    </div>
+                    <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-lg p-1.5 border border-white/5">
+                        <i class="fas fa-check-circle text-emerald-400 text-[10px]"></i>
+                        <span class="text-[10px] text-white/70">Real CBT simulation</span>
+                    </div>
+                    <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-lg p-1.5 border border-white/5">
+                        <i class="fas fa-check-circle text-emerald-400 text-[10px]"></i>
+                        <span class="text-[10px] text-white/70">Track your progress</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Register Form (Compact) -->
+        <div class="w-full md:w-3/5 p-4 md:p-5 bg-white/5 backdrop-blur-sm">
+            <div class="text-center md:hidden mb-2">
+                <img src="/static/img/new_emilia_logo.png" alt="EMIFORPHS Logo" class="w-10 h-auto mx-auto mb-1" />
+                <h2 class="text-sm font-bold text-white">EMIFORPHS</h2>
+                <p class="text-[10px] text-emerald-300 font-medium tracking-widest">CBT EXAM</p>
+            </div>
+
+            <h2 class="text-base md:text-lg font-bold text-white mb-0.5">Create Account</h2>
+            <p class="text-white/40 text-[10px] mb-3">Join thousands of students</p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- First Name -->
+                <div class="mb-2">
+                    <label for="first_name" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-user text-emerald-400 mr-1 text-[10px]"></i>First Name
+                    </label>
+                    <input type="text" name="first_name" id="first_name"
+                           class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 text-xs"
+                           placeholder="Enter your first name" required>
+                </div>
+
+                <!-- Last Name -->
+                <div class="mb-2">
+                    <label for="last_name" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-user text-emerald-400 mr-1 text-[10px]"></i>Last Name
+                    </label>
+                    <input type="text" name="last_name" id="last_name"
+                           class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 text-xs"
+                           placeholder="Enter your last name" required>
+                </div>
+
+                <!-- Username -->
+                <div class="mb-2">
+                    <label for="username" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-user-tag text-emerald-400 mr-1 text-[10px]"></i>Username
+                    </label>
+                    <input type="text" name="username" id="username"
+                           class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 text-xs"
+                           placeholder="Choose a username" required>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-2">
+                    <label for="email" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-envelope text-emerald-400 mr-1 text-[10px]"></i>Email
+                    </label>
+                    <input type="email" name="email" id="email"
+                           class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 text-xs"
+                           placeholder="Enter your email" required>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-2">
+                    <label for="password" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-lock text-emerald-400 mr-1 text-[10px]"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" name="password" id="password"
+                               class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 text-xs pr-8"
+                               placeholder="Create a password" required>
+                        <button type="button" onclick="togglePassword('password', this)" 
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors">
+                            <i class="fas fa-eye text-[12px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Role -->
+                <div class="mb-2">
+                    <label for="role" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-user-graduate text-emerald-400 mr-1 text-[10px]"></i>I am a
+                    </label>
+                    <div class="relative">
+                        <select name="role" id="role"
+                                class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none transition-all duration-300 text-xs">
+                            <option value="STUDENT" class="bg-gray-800">Student</option>
+                            <option value="TEACHER" class="bg-gray-800">Teacher</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-2 text-white/40 text-[10px]"></i>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold py-1.5 rounded-lg transition duration-200 hover:opacity-90 hover:scale-[1.01] shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 text-xs">
+                    <i class="fas fa-user-plus text-xs"></i>
+                    Create Account
+                </button>
+            </form>
+
+            <p class="text-center text-white/40 text-[10px] mt-2">
+                Already have an account?
+                <a href="{% url 'login' %}" class="text-emerald-300 hover:text-emerald-200 font-medium transition-colors">
+                    Login here
+                </a>
+            </p>
+
+            <div class="flex items-center gap-3 my-2">
+                <div class="flex-1 h-px bg-white/10"></div>
+                <span class="text-[8px] text-white/20 font-medium tracking-widest">OR</span>
+                <div class="flex-1 h-px bg-white/10"></div>
+            </div>
+
+            <a href="https://wa.me/2348022854677?text=Hello%20EMIFORPHS%20Admin%2C%20I%20need%20help%20with%20my%20registration"
+               target="_blank"
+               class="flex items-center justify-center gap-2 w-full bg-[#25D366]/20 hover:bg-[#25D366]/30 text-white font-medium py-1.5 rounded-lg border border-[#25D366]/30 transition-all duration-300 text-xs">
+                <i class="fab fa-whatsapp text-[#25D366] text-sm"></i>
+                Contact Admin for Help
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock %}

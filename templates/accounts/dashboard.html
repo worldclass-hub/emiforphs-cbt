@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - EMIFORPHS CBT{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-6xl mx-auto">
+    <!-- ✅ Welcome Header -->
+    <div class="glass-card rounded-xl p-4 md:p-6 mb-5">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h2 class="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-th-large text-teal-400"></i>
+                    Dashboard
+                </h2>
+                <p class="text-white/50 text-xs mt-0.5">
+                    <i class="fas fa-user-graduate text-teal-400 mr-1"></i>
+                    {{ user.role|title }} • Welcome back, {{ user.get_full_name }}
+                </p>
+            </div>
+            <div class="mt-2 md:mt-0">
+                <span class="text-[10px] bg-teal-500/20 text-teal-300 px-3 py-1 rounded-full border border-teal-500/20">
+                    <i class="fas fa-circle text-[6px] text-teal-400 mr-1"></i>
+                    Active
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    ADMIN DASHBOARD
+    ============================================================ -->
+    {% if user.role == 'ADMIN' %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Card 1: Manage Users -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-users text-teal-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Admin</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">Manage Users</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">View and manage all users in the system</p>
+            <a href="/admin/" class="inline-flex items-center gap-1 text-teal-300 hover:text-teal-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                Go to Admin <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <!-- Card 2: All Exams -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-file-alt text-blue-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Admin</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">All Exams</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">View all exams in the CBT platform</p>
+            <a href="#" class="inline-flex items-center gap-1 text-blue-300 hover:text-blue-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                View Exams <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <!-- Card 3: Reports -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-chart-pie text-purple-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Admin</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">Reports</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">View system analytics and statistics</p>
+            <a href="#" class="inline-flex items-center gap-1 text-purple-300 hover:text-purple-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                View Reports <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- ✅ Quick Stats for Admin -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-teal-300">{{ total_users|default:0 }}</div>
+            <div class="text-[10px] text-white/40">Total Users</div>
+        </div>
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-blue-300">{{ total_exams|default:0 }}</div>
+            <div class="text-[10px] text-white/40">Total Exams</div>
+        </div>
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-purple-300">{{ active_students|default:0 }}</div>
+            <div class="text-[10px] text-white/40">Active Students</div>
+        </div>
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-green-300">{{ pass_rate|default:0 }}%</div>
+            <div class="text-[10px] text-white/40">Pass Rate</div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    TEACHER DASHBOARD
+    ============================================================ -->
+    {% elif user.role == 'TEACHER' %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Card 1: Create Exam -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-pen-fancy text-emerald-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Teacher</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">Create Exam</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">Create a new exam for your students</p>
+            <a href="{% url 'teacher_dashboard:create_exam' %}" class="inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                Create Now <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <!-- Card 2: My Exams -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-book-open text-blue-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Teacher</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">My Exams</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">View and manage your created exams</p>
+            <a href="{% url 'teacher_dashboard:my_exams' %}" class="inline-flex items-center gap-1 text-blue-300 hover:text-blue-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                View Exams <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <!-- Card 3: Manage Subjects -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-book text-indigo-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Teacher</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">Manage Subjects</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">Add or remove school subjects</p>
+            <a href="{% url 'teacher_dashboard:manage_subjects' %}" class="inline-flex items-center gap-1 text-indigo-300 hover:text-indigo-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                Manage <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <!-- Card 4: Student Results -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-chart-bar text-purple-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Teacher</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">Student Results</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">View student performance and analytics</p>
+            <a href="{% url 'teacher_dashboard:all_results' %}" class="inline-flex items-center gap-1 text-purple-300 hover:text-purple-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                View Results <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <!-- Card 5: My School -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-school text-orange-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Teacher</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">My School</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">Manage school settings and information</p>
+            <a href="#" class="inline-flex items-center gap-1 text-orange-300 hover:text-orange-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                Manage <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- ✅ Quick Stats for Teacher -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-emerald-300">{{ total_exams|default:0 }}</div>
+            <div class="text-[10px] text-white/40">Total Exams</div>
+        </div>
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-blue-300">{{ students_count|default:0 }}</div>
+            <div class="text-[10px] text-white/40">Students</div>
+        </div>
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-purple-300">{{ avg_score|default:0 }}%</div>
+            <div class="text-[10px] text-white/40">Avg Score</div>
+        </div>
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-orange-300">{{ pending|default:0 }}</div>
+            <div class="text-[10px] text-white/40">Pending</div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    STUDENT DASHBOARD
+    ============================================================ -->
+    {% else %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Card 1: School Exams -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-school text-emerald-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Student</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">School Exams</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">Take exams created by your teachers</p>
+            <a href="{% url 'student_portal:available_exams' %}" class="inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                View Exams <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <!-- Card 2: BECE National Exam -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-graduation-cap text-purple-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Student</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">BECE Exam</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">Practice for your Basic Education Certificate Examination</p>
+            <a href="{% url 'student_portal:bece_dashboard' %}" class="inline-flex items-center gap-1 text-purple-300 hover:text-purple-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                Start Practice <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+
+        <!-- Card 3: My Results -->
+        <div class="glass-card rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group">
+            <div class="flex items-start justify-between">
+                <div class="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center text-2xl">
+                    <i class="fas fa-chart-bar text-yellow-400"></i>
+                </div>
+                <span class="text-[10px] bg-white/10 text-white/40 px-2 py-0.5 rounded-full">Student</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mt-3">My Results</h3>
+            <p class="text-white/40 text-xs mt-1 leading-relaxed">View your exam history and scores</p>
+            <a href="{% url 'student_portal:my_results' %}" class="inline-flex items-center gap-1 text-yellow-300 hover:text-yellow-200 text-xs font-medium mt-3 transition-colors group-hover:gap-2">
+                View Results <i class="fas fa-arrow-right text-[10px]"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- ✅ Quick Stats for Student -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-cyan-300">{{ exams_taken|default:0 }}</div>
+            <div class="text-[10px] text-white/40">Exams Taken</div>
+        </div>
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-purple-300">{{ avg_score|default:0 }}%</div>
+            <div class="text-[10px] text-white/40">Avg Score</div>
+        </div>
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-yellow-300">{{ best_score|default:0 }}%</div>
+            <div class="text-[10px] text-white/40">Best Score</div>
+        </div>
+        <div class="glass-card-light rounded-lg p-3 text-center">
+            <div class="text-lg font-bold text-green-300">#{{ rank|default:1 }}</div>
+            <div class="text-[10px] text-white/40">Rank</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

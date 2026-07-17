@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>EMIFORPHS CBT Platform - {% block title %}{% endblock %}</title>
+
+    <!-- ✅ Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ✅ Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- ✅ Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        * {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ============================================================
+           BACKGROUND IMAGE - WITH OUR SCROLL SYSTEM
+           ============================================================ */
+        body {
+            background-image: url('/static/img/Emilia_image_3.PNG') !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            background-attachment: fixed !important;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           OUR ROCK SOLID SCROLL SYSTEM
+           ============================================================ */
+        .scroll-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none;
+            touch-action: pan-y;
+            scroll-behavior: smooth;
+            z-index: 1;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(13, 148, 136, 0.3);
+            border-radius: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(13, 148, 136, 0.5);
+        }
+
+        .scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(13, 148, 136, 0.3) transparent;
+        }
+
+        /* ============================================================
+           FIXED OVERLAY
+           ============================================================ */
+        body::before {
+            content: '' !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0, 0, 0, 0.55) !important;
+            z-index: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* ============================================================
+           FLOATING PARTICLES / BUBBLES
+           ============================================================ */
+        .particle {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatUp linear infinite;
+            opacity: 0;
+            will-change: transform, opacity;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.4;
+            }
+            100% {
+                transform: translateY(-10vh) scale(1) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* ============================================================
+           GLASS CARD
+           ============================================================ */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ============================================================
+           NAVBAR - Glass Effect
+           ============================================================ */
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            height: 65px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        /* ============================================================
+           BUTTONS
+           ============================================================ */
+        .btn-primary {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0f766e, #064e3b);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(13, 148, 136, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* ============================================================
+           MESSAGES
+           ============================================================ */
+        .message-container {
+            position: relative;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .message-success {
+            background: rgba(13, 148, 136, 0.2);
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            color: #5eead4;
+        }
+
+        .message-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .message-info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        .footer-glass {
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            height: 50px;
+            flex-shrink: 0;
+            position: sticky;
+            bottom: 0;
+            z-index: 50;
+        }
+
+        /* ============================================================
+           CONTENT WRAPPER - Our scroll system
+           ============================================================ */
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 20px;
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 640px) {
+            .navbar-glass {
+                height: 58px;
+            }
+            .footer-glass {
+                height: 44px;
+            }
+            .content-area {
+                padding: 12px 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar-glass {
+                height: 52px;
+            }
+            .footer-glass {
+                height: 40px;
+            }
+            .content-area {
+                padding: 8px 10px;
+            }
+        }
+
+        /* ============================================================
+           PULSE ANIMATION
+           ============================================================ */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; text-shadow: 0 0 30px rgba(13, 148, 136, 0.3); }
+        }
+
+        .welcome-text {
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        /* ============================================================
+           EXAM WARNING OVERLAY
+           ============================================================ */
+        .exam-warning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .exam-warning-overlay.active {
+            display: flex;
+        }
+
+        .exam-warning-box {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 520px;
+            width: 92%;
+            box-shadow: 0 60px 120px rgba(0, 0, 0, 0.8);
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .exam-warning-icon {
+            font-size: 64px;
+            color: #f59e0b;
+            margin-bottom: 16px;
+            display: block;
+            text-align: center;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .exam-warning-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .exam-warning-text {
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 6px;
+        }
+
+        .exam-warning-stats {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-around;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .exam-warning-stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .exam-warning-stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #5eead4;
+            display: block;
+            line-height: 1;
+        }
+
+        .exam-warning-stat-number.unanswered {
+            color: #fca5a5;
+        }
+
+        .exam-warning-stat-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .exam-warning-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .exam-warning-buttons button {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .exam-warning-buttons button:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-continue-exam {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            color: white;
+            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);
+        }
+
+        .btn-continue-exam:hover {
+            box-shadow: 0 8px 30px rgba(13, 148, 136, 0.5);
+        }
+
+        .btn-submit-exam {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-submit-exam:hover {
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.5);
+        }
+
+        .btn-leave-exam {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-leave-exam:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .exam-warning-footer {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 480px) {
+            .exam-warning-box {
+                padding: 28px 20px;
+            }
+            .exam-warning-buttons {
+                flex-direction: column;
+            }
+            .exam-warning-buttons button {
+                padding: 14px;
+                font-size: 14px;
+            }
+            .exam-warning-stats {
+                padding: 14px;
+            }
+            .exam-warning-stat-number {
+                font-size: 24px;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- ============================================================
+    PARTICLES / BUBBLES CONTAINER
+    ============================================================ -->
+    <div id="particles-container"></div>
+
+    <!-- ============================================================
+    EXAM WARNING OVERLAY
+    ============================================================ -->
+    <div id="examWarningOverlay" class="exam-warning-overlay">
+        <div class="exam-warning-box">
+            <span class="exam-warning-icon">⚠️</span>
+            <h2 class="exam-warning-title">You're in the Middle of an Exam!</h2>
+            <p class="exam-warning-text">
+                You are currently taking an exam. Please choose an option below before leaving.
+            </p>
+            
+            <div id="examWarningStats" class="exam-warning-stats">
+                <div class="exam-warning-stat-item">
+                    <span class="exam-warning-stat-number" id="warningAnswered">0</span>
+                    <span class="exam-warning-stat-label">Answered</span>
+                </div>
+                <div class="exam-warning-stat-item">
+                    <span class="exam-warning-stat-number" id="warningTotal">0</span>
+                    <span class="exam-warning-stat-label">Total Questions</span>
+                </div>
+                <div class="exam-warning-stat-item">
+                    <span class="exam-warning-stat-number unanswered" id="warningUnanswered">0</span>
+                    <span class="exam-warning-stat-label">Unanswered</span>
+                </div>
+            </div>
+            
+            <p class="exam-warning-text" style="font-size: 12px; color: rgba(255, 255, 255, 0.3);">
+                <i class="fas fa-save mr-1"></i> Your progress is automatically saved
+            </p>
+            
+            <div class="exam-warning-buttons">
+                <button class="btn-continue-exam" onclick="closeWarningAndContinue()">
+                    <i class="fas fa-arrow-left mr-2"></i>Continue
+                </button>
+                <button class="btn-submit-exam" onclick="submitExamFromWarning()">
+                    <i class="fas fa-check mr-2"></i>Submit
+                </button>
+                <button class="btn-leave-exam" onclick="quitAndLeave()">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Quit
+                </button>
+            </div>
+            
+            <div class="exam-warning-footer">
+                <i class="fas fa-info-circle mr-1"></i> Submitting will save your answers and finish the exam
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    OUR ROCK SOLID SCROLL CONTAINER
+    ============================================================ -->
+    <div class="scroll-container" id="scrollContainer">
+
+        <!-- ============================================================
+        MAIN CONTENT WRAPPER
+        ============================================================ -->
+        <div class="content-wrapper">
+
+            <!-- ============================================================
+            NAVIGATION - Sticky
+            ============================================================ -->
+            <nav class="navbar-glass flex items-center px-4">
+                <div class="container mx-auto flex justify-between items-center h-full">
+                    <!-- Left: Logo & Brand -->
+                    <div class="flex items-center space-x-3">
+                        <a href="{% url 'dashboard' %}" class="flex items-center space-x-2" id="dashboardLink">
+                            <img src="/static/img/new_emilia_logo.png" alt="EMIFORPHS Logo" class="h-8 w-auto" />
+                            <div class="hidden sm:block">
+                                <h1 class="text-sm font-bold text-white tracking-wide leading-tight">
+                                    EMIFORPHS
+                                </h1>
+                                <p class="text-[8px] text-teal-300 font-medium tracking-widest -mt-0.5">
+                                    CBT EXAM
+                                </p>
+                            </div>
+                        </a>
+                        {% if user.is_authenticated %}
+                            <span class="hidden md:inline text-xs text-white/60">Welcome, {{ user.username }}</span>
+                            <span class="text-[10px] bg-teal-500/30 text-teal-300 px-2 py-0.5 rounded-full font-medium border border-teal-500/20">
+                                {{ user.role }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Right: Nav Links -->
+                    <div class="flex items-center space-x-2">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="text-white/70 hover:text-white font-medium text-xs hidden sm:inline transition-colors" id="dashboardNavLink">
+                                <i class="fas fa-th-large mr-1 text-[10px]"></i>Dashboard
+                            </a>
+                            <form method="post" action="{% url 'logout' %}" class="inline" id="logoutForm">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-red-500/70 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-medium transition duration-200 backdrop-blur-sm border border-red-400/20 cursor-pointer">
+                                    <i class="fas fa-sign-out-alt mr-1 text-[10px]"></i>Logout
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="text-white/70 hover:text-white font-medium text-xs transition-colors">
+                                <i class="fas fa-sign-in-alt mr-1 text-[10px]"></i>Login
+                            </a>
+                            <a href="{% url 'register' %}" class="btn-primary text-white px-3 py-1.5 rounded-lg text-[10px] font-medium transition duration-200 shadow-lg shadow-teal-500/25">
+                                <i class="fas fa-user-plus mr-1 text-[10px]"></i>Register
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </nav>
+
+            <!-- ============================================================
+            MESSAGES
+            ============================================================ -->
+            {% if messages %}
+                <div class="container mx-auto px-4 pt-2 message-container">
+                    {% for message in messages %}
+                        <div class="p-2 rounded-lg shadow-lg flex items-center justify-between backdrop-blur-sm text-xs
+                                    {% if message.tags == 'error' %}message-error
+                                    {% elif message.tags == 'success' %}message-success
+                                    {% else %}message-info{% endif %}">
+                            <span class="flex items-center">
+                                {% if message.tags == 'error' %}
+                                    <i class="fas fa-exclamation-circle mr-2 text-xs"></i>
+                                {% elif message.tags == 'success' %}
+                                    <i class="fas fa-check-circle mr-2 text-xs"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle mr-2 text-xs"></i>
+                                {% endif %}
+                                {{ message }}
+                            </span>
+                            <button onclick="this.parentElement.remove()" class="text-white/50 hover:text-white transition-colors">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- ============================================================
+            MAIN CONTENT - Scrollable
+            ============================================================ -->
+            <div class="content-area">
+                {% block content %}
+                {% endblock %}
+            </div>
+
+            <!-- ============================================================
+            FOOTER - Sticky
+            ============================================================ -->
+            <footer class="footer-glass flex items-center px-4">
+                <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+                    <div class="text-[10px] text-white/40">
+                        &copy; 2026 <span class="text-teal-300">EMIFORPHS</span> CBT EXAM
+                    </div>
+                    <div class="flex space-x-4 text-[10px] text-white/30 mt-0.5 md:mt-0">
+                        <a href="#" class="hover:text-teal-300 transition-colors">About</a>
+                        <a href="#" class="hover:text-teal-300 transition-colors">Privacy</a>
+                        <a href="#" class="hover:text-teal-300 transition-colors">Terms</a>
+                        <a href="https://wa.me/2348022854677" target="_blank" class="hover:text-teal-300 transition-colors">
+                            <i class="fab fa-whatsapp mr-0.5"></i>Contact
+                        </a>
+                    </div>
+                </div>
+            </footer>
+
+        </div>
+    </div>
+
+    <!-- ============================================================
+    JAVASCRIPT - BUBBLES & INTERACTIONS
+    ============================================================ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // ============================================================
+            // 1. CREATE FLOATING BUBBLES / PARTICLES
+            // ============================================================
+            function createParticles() {
+                const container = document.getElementById('particles-container');
+                if (!container) return;
+
+                const colors = [
+                    '#0d9488', '#14b8a6', '#25D366',
+                    '#5eead4', '#34d399', '#6ee7b7',
+                    '#2dd4bf', '#22d3ee', '#a7f3d0'
+                ];
+
+                const count = 25;
+
+                for (let i = 0; i < count; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+
+                    const size = Math.random() * 6 + 3;
+                    particle.style.width = size + 'px';
+                    particle.style.height = size + 'px';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.animationDuration = (Math.random() * 13 + 12) + 's';
+                    particle.style.animationDelay = (Math.random() * 15) + 's';
+                    particle.style.opacity = Math.random() * 0.3 + 0.1;
+
+                    if (Math.random() > 0.5) {
+                        particle.style.boxShadow = '0 0 10px ' + particle.style.background;
+                    }
+
+                    container.appendChild(particle);
+                }
+            }
+
+            createParticles();
+
+            // ============================================================
+            // 2. OUR ROCK SOLID SCROLL MANAGEMENT
+            // ============================================================
+            const scrollContainer = document.getElementById('scrollContainer');
+            
+            if (scrollContainer) {
+                let touchStartY = 0;
+                let touchStartScrollTop = 0;
+                
+                let scrollTop = 0;
+                let scrollHeight = 0;
+                let clientHeight = 0;
+                
+                function enforceBoundaries() {
+                    if (!scrollContainer) return;
+                    
+                    scrollTop = scrollContainer.scrollTop;
+                    scrollHeight = scrollContainer.scrollHeight;
+                    clientHeight = scrollContainer.clientHeight;
+                    
+                    if (scrollTop < 0) {
+                        scrollContainer.scrollTop = 0;
+                        return;
+                    }
+                    
+                    if (scrollTop + clientHeight > scrollHeight) {
+                        scrollContainer.scrollTop = Math.max(0, scrollHeight - clientHeight);
+                        return;
+                    }
+                }
+                
+                scrollContainer.addEventListener('touchstart', function(e) {
+                    touchStartY = e.touches[0].clientY;
+                    touchStartScrollTop = scrollContainer.scrollTop;
+                }, { passive: false });
+                
+                scrollContainer.addEventListener('touchmove', function(e) {
+                    const currentY = e.touches[0].clientY;
+                    const deltaY = currentY - touchStartY;
+                    const currentScrollTop = scrollContainer.scrollTop;
+                    const maxScrollTop = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+                    
+                    if (currentScrollTop <= 0 && deltaY > 0) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    if (currentScrollTop >= maxScrollTop - 1 && deltaY < 0) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }, { passive: false });
+                
+                scrollContainer.addEventListener('scroll', function() {
+                    enforceBoundaries();
+                });
+                
+                window.addEventListener('resize', function() {
+                    enforceBoundaries();
+                });
+                
+                enforceBoundaries();
+                
+                if ('ontouchstart' in window) {
+                    scrollContainer.style.WebkitOverflowScrolling = 'touch';
+                }
+            }
+
+            // ============================================================
+            // 3. AUTO-DISMISS MESSAGES
+            // ============================================================
+            const messages = document.querySelectorAll('.message-container .flex');
+            messages.forEach(function(msg) {
+                setTimeout(function() {
+                    msg.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    msg.style.opacity = '0';
+                    msg.style.transform = 'translateY(-10px)';
+                    setTimeout(function() {
+                        if (msg.parentElement) {
+                            msg.remove();
+                        }
+                    }, 500);
+                }, 4000);
+            });
+
+            // ============================================================
+            // 4. EXAM WARNING ON DASHBOARD NAVIGATION
+            // ============================================================
+            
+            // Check if we're on an exam page
+            const isExamPage = window.location.pathname.includes('/take-exam-session/') || 
+                              window.location.pathname.includes('/take-exam/');
+            
+            // Get exam session/attempt ID from URL
+            let examId = null;
+            let examType = null;
+            
+            if (window.location.pathname.includes('/take-exam-session/')) {
+                const match = window.location.pathname.match(/\/take-exam-session\/(\d+)/);
+                if (match) {
+                    examId = match[1];
+                    examType = 'session';
+                }
+            } else if (window.location.pathname.includes('/take-exam/')) {
+                const match = window.location.pathname.match(/\/take-exam\/(\d+)/);
+                if (match) {
+                    examId = match[1];
+                    examType = 'attempt';
+                }
+            }
+            
+            // Store target URL for navigation
+            let targetUrl = '';
+            
+            // Function to update stats in the warning modal - ACCURATE VERSION
+            function updateWarningStats(answered, total, unanswered) {
+                const answeredEl = document.getElementById('warningAnswered');
+                const totalEl = document.getElementById('warningTotal');
+                const unansweredEl = document.getElementById('warningUnanswered');
+                
+                if (answeredEl) {
+                    answeredEl.textContent = answered;
+                    answeredEl.style.color = '#5eead4';
+                }
+                if (totalEl) {
+                    totalEl.textContent = total;
+                    totalEl.style.color = '#5eead4';
+                }
+                if (unansweredEl) {
+                    unansweredEl.textContent = unanswered;
+                    if (unanswered > 0) {
+                        unansweredEl.style.color = '#fca5a5';
+                        unansweredEl.className = 'exam-warning-stat-number unanswered';
+                    } else {
+                        unansweredEl.style.color = '#5eead4';
+                        unansweredEl.className = 'exam-warning-stat-number';
+                    }
+                }
+            }
+            
+            // Get progress from the hidden data elements
+            function getProgressFromHiddenData() {
+                let answered = 0;
+                let total = 0;
+                let unanswered = 0;
+                
+                // Get from hidden elements
+                const answeredEl = document.getElementById('exam-answered-count');
+                const totalEl = document.getElementById('exam-total-questions');
+                const unansweredEl = document.getElementById('exam-unanswered-count');
+                
+                if (answeredEl) {
+                    const val = parseInt(answeredEl.textContent.trim());
+                    if (!isNaN(val)) answered = val;
+                }
+                
+                if (totalEl) {
+                    const val = parseInt(totalEl.textContent.trim());
+                    if (!isNaN(val)) total = val;
+                }
+                
+                if (unansweredEl) {
+                    const val = parseInt(unansweredEl.textContent.trim());
+                    if (!isNaN(val)) {
+                        unanswered = val;
+                    } else {
+                        unanswered = total - answered;
+                    }
+                } else {
+                    unanswered = total - answered;
+                }
+                
+                console.log(`📊 Hidden data: ${answered}/${total} (${unanswered} unanswered)`);
+                
+                return { answered, total, unanswered };
+            }
+            
+            // Show warning when dashboard link is clicked
+            function showExamWarning(url) {
+                if (!examId) {
+                    window.location.href = url;
+                    return;
+                }
+                
+                targetUrl = url;
+                
+                // Get progress from hidden data on the page
+                const progress = getProgressFromHiddenData();
+                updateWarningStats(progress.answered, progress.total, progress.unanswered);
+                
+                // Show the overlay
+                const overlay = document.getElementById('examWarningOverlay');
+                overlay.classList.add('active');
+                
+                // Also try to fetch from server for updated data
+                let progressUrl = '';
+                if (examType === 'session') {
+                    progressUrl = `/student-portal/get-session-progress/${examId}/`;
+                } else if (examType === 'attempt') {
+                    progressUrl = `/student-portal/get-progress/${examId}/`;
+                }
+                
+                if (progressUrl) {
+                    fetch(progressUrl, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network error');
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('📊 Server progress data:', data);
+                        const answered = data.answered || 0;
+                        const total = data.total || 0;
+                        const unanswered = total - answered;
+                        updateWarningStats(answered, total, unanswered);
+                    })
+                    .catch(error => {
+                        console.log('ℹ️ Using hidden data (server fetch failed)');
+                    });
+                }
+            }
+            
+            // Close warning and continue exam
+            window.closeWarningAndContinue = function() {
+                document.getElementById('examWarningOverlay').classList.remove('active');
+            };
+            
+            // Submit exam from warning
+            window.submitExamFromWarning = function() {
+                const overlay = document.getElementById('examWarningOverlay');
+                overlay.classList.remove('active');
+                
+                if (examId && examType === 'session') {
+                    const finishForm = document.getElementById('finish-form');
+                    if (finishForm) {
+                        finishForm.submit();
+                    } else {
+                        window.location.href = `/student-portal/finish-exam-session/${examId}/`;
+                    }
+                } else if (examId && examType === 'attempt') {
+                    const finishForm = document.getElementById('finish-form');
+                    if (finishForm) {
+                        finishForm.submit();
+                    } else {
+                        window.location.href = `/student-portal/finish-exam/${examId}/`;
+                    }
+                } else {
+                    window.location.href = targetUrl || '/dashboard/';
+                }
+            };
+            
+            // Quit and leave exam
+            window.quitAndLeave = function() {
+                const overlay = document.getElementById('examWarningOverlay');
+                overlay.classList.remove('active');
+                
+                if (examId && examType === 'session') {
+                    const quitForm = document.getElementById('quit-form');
+                    if (quitForm) {
+                        quitForm.submit();
+                    } else {
+                        window.location.href = `/student-portal/quit-exam-session/${examId}/`;
+                    }
+                } else if (examId && examType === 'attempt') {
+                    const quitForm = document.getElementById('quit-form');
+                    if (quitForm) {
+                        quitForm.submit();
+                    } else {
+                        window.location.href = `/student-portal/quit-exam/${examId}/`;
+                    }
+                } else {
+                    window.location.href = targetUrl || '/dashboard/';
+                }
+            };
+            
+            // Intercept dashboard link clicks
+            const dashboardLinks = document.querySelectorAll('#dashboardLink, #dashboardNavLink');
+            dashboardLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (isExamPage && examId) {
+                        e.preventDefault();
+                        showExamWarning(this.href);
+                    }
+                });
+            });
+            
+            // Also intercept logout
+            const logoutForm = document.getElementById('logoutForm');
+            if (logoutForm && isExamPage && examId) {
+                logoutForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    showExamWarning('/logout/');
+                });
+            }
+
+            // ============================================================
+            // 5. CONSOLE BRANDING
+            // ============================================================
+            console.log('%c🏫 EMIFORPHS CBT PLATFORM', 'font-size: 20px; font-weight: bold; color: #0d9488;');
+            console.log('%c📚 EMILIA FOREMOST PRIMARY & HIGH SCHOOL', 'font-size: 12px; color: #5eead4;');
+            console.log('%c🔐 Secure Exam Platform | 📞 08022854677', 'font-size: 10px; color: #25D366;');
+            
+            if (isExamPage && examId) {
+                console.log(`%c📝 You are currently taking an exam (${examType}: ${examId})`, 'font-size: 12px; color: #f59e0b;');
+                console.log('%c⚠️ Dashboard navigation will prompt for confirmation', 'font-size: 12px; color: #f59e0b;');
+            }
+
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

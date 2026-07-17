@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Create Exam - EMIFORPHS CBT{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center h-[calc(100vh-130px)] w-full py-2">
+    <div class="glass-card rounded-xl overflow-hidden max-w-2xl w-full p-5">
+
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
+                <i class="fas fa-plus-circle text-teal-400 text-lg"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-white">Create New Exam</h2>
+                <p class="text-white/40 text-[10px]">Set up a new exam for your students</p>
+            </div>
+        </div>
+
+        {% if no_subjects %}
+            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-4 text-center">
+                <p class="text-yellow-300 text-xs">⚠️ No subjects available. Please add a subject first.</p>
+                <a href="{% url 'teacher_dashboard:manage_subjects' %}" class="text-teal-300 hover:text-teal-200 text-xs font-medium inline-block mt-2">
+                    <i class="fas fa-plus mr-1"></i>Add Subject
+                </a>
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Title -->
+                <div class="md:col-span-2">
+                    <label for="title" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-pencil-alt text-teal-400 mr-1 text-[10px]"></i>Exam Title
+                    </label>
+                    <input type="text" name="title" id="title"
+                           class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-xs"
+                           placeholder="e.g., Mathematics First Term Exam" required>
+                </div>
+
+                <!-- Subject -->
+                <div>
+                    <label for="subject" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-book text-teal-400 mr-1 text-[10px]"></i>Subject
+                    </label>
+                    <div class="relative">
+                        <select name="subject" id="subject"
+                                class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none transition-all duration-300 text-xs"
+                                {% if no_subjects %}disabled{% endif %}>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}" class="bg-gray-800">{{ subject.name }}</option>
+                            {% empty %}
+                                <option value="" class="bg-gray-800">No subjects available</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-2 text-white/40 text-[10px]"></i>
+                    </div>
+                    <div class="mt-1 text-right">
+                        <a href="{% url 'teacher_dashboard:manage_subjects' %}" class="text-[8px] text-teal-400 hover:text-teal-300 transition-colors">
+                            <i class="fas fa-plus-circle mr-0.5"></i>Manage Subjects
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Duration -->
+                <div>
+                    <label for="duration" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-clock text-teal-400 mr-1 text-[10px]"></i>Duration (minutes)
+                    </label>
+                    <input type="number" name="duration" id="duration" value="45"
+                           class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-xs">
+                </div>
+
+                <!-- Class Level -->
+                <div>
+                    <label for="class_level" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-users text-teal-400 mr-1 text-[10px]"></i>Class Level
+                    </label>
+                    <div class="relative">
+                        <select name="class_level" id="class_level"
+                                class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none transition-all duration-300 text-xs">
+                            {% for level in class_levels %}
+                                <option value="{{ level }}" class="bg-gray-800">{{ level }}</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-2 text-white/40 text-[10px]"></i>
+                    </div>
+                </div>
+
+                <!-- Term -->
+                <div>
+                    <label for="term" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-calendar-alt text-teal-400 mr-1 text-[10px]"></i>Term
+                    </label>
+                    <div class="relative">
+                        <select name="term" id="term"
+                                class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none transition-all duration-300 text-xs">
+                            {% for term in terms %}
+                                <option value="{{ term }}" class="bg-gray-800">{{ term }}</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-2 text-white/40 text-[10px]"></i>
+                    </div>
+                </div>
+
+                <!-- Session -->
+                <div>
+                    <label for="session" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-calendar-check text-teal-400 mr-1 text-[10px]"></i>Session
+                    </label>
+                    <input type="text" name="session" id="session" value="2024/2025"
+                           class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-xs">
+                </div>
+
+                <!-- Instructions -->
+                <div class="md:col-span-2">
+                    <label for="instructions" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-info-circle text-teal-400 mr-1 text-[10px]"></i>Instructions
+                    </label>
+                    <textarea name="instructions" id="instructions" rows="2"
+                              class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-xs"
+                              placeholder="Enter exam instructions (optional)"></textarea>
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="btn-primary w-full text-white font-semibold py-1.5 rounded-lg transition duration-200 shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2 text-xs mt-3"
+                    {% if no_subjects %}disabled{% endif %}>
+                <i class="fas fa-plus text-xs"></i>
+                Create Exam
+            </button>
+        </form>
+
+        <div class="mt-3 text-center">
+            <a href="{% url 'teacher_dashboard:my_exams' %}" class="text-white/40 hover:text-white/60 text-[10px] transition-colors">
+                <i class="fas fa-arrow-left mr-1"></i>Back to My Exams
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

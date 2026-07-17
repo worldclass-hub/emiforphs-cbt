@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Login - EMIFORPHS CBT{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center h-[calc(100vh-130px)] w-full py-2">
+    <div class="glass-card rounded-xl overflow-hidden max-w-3xl w-full flex flex-col md:flex-row">
+
+        <!-- Left Side - Branding (Compact) -->
+        <div class="hidden md:flex md:w-2/5 bg-gradient-to-br from-teal-700/40 to-emerald-800/40 p-4 flex-col justify-center items-center text-white backdrop-blur-sm border-r border-white/5">
+            <div class="text-center">
+                <img src="/static/img/new_emilia_logo.png" alt="EMIFORPHS Logo" class="w-14 h-auto mx-auto mb-2" />
+                <h2 class="text-lg font-bold mb-0">EMIFORPHS</h2>
+                <p class="text-teal-200 text-[10px] font-medium tracking-widest uppercase mb-2">CBT EXAM PLATFORM</p>
+                <div class="w-10 h-0.5 bg-teal-400 mx-auto rounded-full mb-3"></div>
+                <p class="text-white/50 text-[10px] leading-relaxed max-w-xs mx-auto">
+                    Your all-in-one Computer-Based Test solution for JAMB, WAEC, BECE, and School Exams
+                </p>
+                <div class="mt-3 grid grid-cols-2 gap-2 text-center">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/5">
+                        <div class="text-base font-bold text-teal-300">4</div>
+                        <div class="text-[8px] text-white/40">Exam Types</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/5">
+                        <div class="text-base font-bold text-teal-300">100%</div>
+                        <div class="text-[8px] text-white/40">CBT Ready</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form (Compact) -->
+        <div class="w-full md:w-3/5 p-4 md:p-5 bg-white/5 backdrop-blur-sm">
+            <div class="text-center md:hidden mb-2">
+                <img src="/static/img/new_emilia_logo.png" alt="EMIFORPHS Logo" class="w-10 h-auto mx-auto mb-1" />
+                <h2 class="text-sm font-bold text-white">EMIFORPHS</h2>
+                <p class="text-[10px] text-teal-300 font-medium tracking-widest">CBT EXAM</p>
+            </div>
+
+            <h2 class="text-base md:text-lg font-bold text-white mb-0.5">Welcome Back</h2>
+            <p class="text-white/40 text-[10px] mb-3">Login to access your dashboard</p>
+
+            <!-- ✅ ERROR MESSAGE - Super Design -->
+            {% if form.errors or messages %}
+                <div class="mb-3 p-2.5 rounded-lg bg-gradient-to-r from-red-600/30 to-rose-600/30 border border-red-500/40 backdrop-blur-sm shadow-lg shadow-red-500/10 animate-pulse">
+                    <div class="flex items-center gap-2">
+                        <div class="flex-shrink-0">
+                            <div class="w-6 h-6 rounded-full bg-red-500/30 flex items-center justify-center border border-red-500/50">
+                                <i class="fas fa-times-circle text-red-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-[10px] text-red-300 font-medium drop-shadow">
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        {{ message }}
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="font-bold">❌ Login Failed!</span> The username or password you entered is incorrect. Please try again.
+                                {% endif %}
+                            </p>
+                            <p class="text-[8px] text-red-400/60 mt-0.5">
+                                <i class="fas fa-info-circle mr-1"></i>Hint: Check your Caps Lock and try again
+                            </p>
+                        </div>
+                        <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 text-red-400/50 hover:text-red-300 transition-colors">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-2">
+                    <label for="username" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-user text-teal-400 mr-1 text-[10px]"></i>Username
+                    </label>
+                    <input type="text" name="username" id="username"
+                           class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-xs {% if form.errors %}border-red-500/50 focus:ring-red-500{% endif %}"
+                           placeholder="Enter your username" required autofocus>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="block text-white/60 font-medium mb-0.5 text-[10px]">
+                        <i class="fas fa-lock text-teal-400 mr-1 text-[10px]"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" name="password" id="password"
+                               class="w-full px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 text-xs pr-8 {% if form.errors %}border-red-500/50 focus:ring-red-500{% endif %}"
+                               placeholder="Enter your password" required>
+                        <button type="button" onclick="togglePassword('password', this)" 
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors">
+                            <i class="fas fa-eye text-[12px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="btn-primary w-full text-white font-semibold py-1.5 rounded-lg transition duration-200 shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2 text-xs">
+                    <i class="fas fa-sign-in-alt text-xs"></i>
+                    Login
+                </button>
+            </form>
+
+            <p class="text-center text-white/40 text-[10px] mt-2">
+                Don't have an account?
+                <a href="{% url 'register' %}" class="text-teal-300 hover:text-teal-200 font-medium transition-colors">
+                    Register here
+                </a>
+            </p>
+
+            <div class="flex items-center gap-3 my-2">
+                <div class="flex-1 h-px bg-white/10"></div>
+                <span class="text-[8px] text-white/20 font-medium tracking-widest">OR</span>
+                <div class="flex-1 h-px bg-white/10"></div>
+            </div>
+
+            <a href="https://wa.me/2348022854677?text=Hello%20EMIFORPHS%20Admin%2C%20I%20need%20help%20with%20my%20login"
+               target="_blank"
+               class="flex items-center justify-center gap-2 w-full bg-[#25D366]/20 hover:bg-[#25D366]/30 text-white font-medium py-1.5 rounded-lg border border-[#25D366]/30 transition-all duration-300 text-xs">
+                <i class="fab fa-whatsapp text-[#25D366] text-sm"></i>
+                Contact Admin for Help
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+{% endblock %}
