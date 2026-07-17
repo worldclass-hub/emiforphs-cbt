@@ -6,9 +6,6 @@ __pycache__/
 .Python
 *.sqlite3
 db.sqlite3
-staticfiles/
-static/
-media/
 .env
 *.log
 .DS_Store
