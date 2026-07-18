@@ -26,9 +26,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -44,6 +41,7 @@ ALLOWED_HOSTS = ["*"]
 
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://emiforphs-cbt.onrender.com/',
     'http://127.0.0.1:8000',
 ]
 
@@ -61,6 +59,10 @@ INSTALLED_APPS = [
     'exams',
     'teacher_dashboard',
     'student_portal',
+     # Third party apps
+    'crispy_forms',
+    'crispy_bootstrap5',
+    'nested_admin',
 ]
 
 MIDDLEWARE = [
