@@ -54,12 +54,35 @@
         </div>
 
         <!-- ============================================================
+        MOBILE QUESTION NAVIGATOR - Shows numbers in a scrollable row
+        ============================================================ -->
+        <div class="md:hidden mb-3">
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-[8px] text-white/40">Jump to question:</span>
+                <span class="text-[8px] text-white/40">
+                    <span class="text-purple-300">{{ answers_count }}</span> answered
+                </span>
+            </div>
+            <div class="flex gap-1 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-purple-500/30 scrollbar-track-transparent" id="mobile-question-nav">
+                {% for q in question_data %}
+                    <a href="?q={{ q.position }}" 
+                       class="mobile-q-btn flex-shrink-0 w-7 h-7 rounded text-[8px] font-bold flex items-center justify-center transition-all duration-200
+                              {% if q.position == current_position %}ring-2 ring-purple-400 scale-110 shadow-lg shadow-purple-500/30{% endif %}
+                              {% if q.answered %}bg-purple-500/60 text-white border border-purple-400/50{% else %}bg-white/10 text-white/60 border border-white/10 hover:bg-white/20{% endif %}"
+                       title="Question {{ q.number }} - {% if q.answered %}Answered{% else %}Unanswered{% endif %}">
+                        {{ q.number }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ============================================================
         MAIN CONTENT: Sidebar + Question
         ============================================================ -->
         <div class="flex gap-3">
             
             <!-- ============================================================
-            LEFT SIDEBAR - Shows ALL questions with numbers
+            LEFT SIDEBAR - Desktop only (hidden on mobile)
             ============================================================ -->
             <div class="hidden md:block w-48 flex-shrink-0">
                 <div class="bg-white/5 border border-white/10 rounded-lg p-2 max-h-[calc(100vh-350px)] overflow-y-auto">
@@ -533,6 +556,36 @@ STYLES
     .question-nav-btn:hover {
         transform: scale(1.1);
     }
+    
+    /* Mobile question navigator scrollbar */
+    #mobile-question-nav {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(168, 85, 247, 0.3) transparent;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #mobile-question-nav::-webkit-scrollbar {
+        height: 2px;
+    }
+    
+    #mobile-question-nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    #mobile-question-nav::-webkit-scrollbar-thumb {
+        background: rgba(168, 85, 247, 0.3);
+        border-radius: 10px;
+    }
+    
+    .mobile-q-btn {
+        transition: all 0.2s ease;
+        min-width: 28px;
+        min-height: 28px;
+    }
+    .mobile-q-btn:hover {
+        transform: scale(1.1);
+    }
+    
     .glass-card {
         background: rgba(15, 23, 42, 0.75) !important;
         backdrop-filter: blur(40px) !important;
@@ -540,6 +593,7 @@ STYLES
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
     }
+    
     .btn-primary {
         background: linear-gradient(135deg, #0d9488, #0f766e);
         transition: all 0.3s ease;
@@ -549,6 +603,7 @@ STYLES
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(13, 148, 136, 0.4);
     }
+    
     .max-h-\[calc\(100vh-350px\)\]::-webkit-scrollbar {
         width: 2px;
     }
@@ -556,6 +611,7 @@ STYLES
         background: rgba(168, 85, 247, 0.4);
         border-radius: 10px;
     }
+    
     button:disabled {
         opacity: 0.6;
         cursor: not-allowed;
