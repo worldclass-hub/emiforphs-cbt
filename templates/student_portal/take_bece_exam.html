@@ -3,15 +3,25 @@
 
 {% block content %}
 <div class="flex items-center justify-center h-[calc(100vh-130px)] w-full py-2">
-    <div class="glass-card rounded-xl overflow-hidden max-w-5xl w-full p-4">
+    <div class="glass-card rounded-xl overflow-hidden max-w-6xl w-full p-4">
 
         <!-- Exam Header -->
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+        <div class="flex items-center justify-between mb-2 pb-2 border-b border-white/10">
             <div>
-                <h2 class="text-base font-bold text-white">📚 BECE Exam</h2>
-                <div class="flex items-center gap-2 text-[10px] text-white/40">
-                    <span><i class="fas fa-book mr-1"></i>{{ current_subject }}</span>
-                    <span><i class="fas fa-question-circle mr-1"></i>{{ total_questions }} Questions</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full border border-purple-500/20">
+                        Q{{ current_position|add:1 }}/{{ total_questions }}
+                    </span>
+                    <span class="text-[8px] text-white/40">{{ current_subject }}</span>
+                    {% if question.year %}
+                        <span class="text-[8px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/20">
+                            📅 {{ question.year }}
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-3 text-[10px] text-white/40">
+                    <span><i class="fas fa-check-circle mr-1 text-emerald-400"></i>Answered: <span id="answered-count-display">{{ answers_count }}</span></span>
+                    <span><i class="fas fa-circle mr-1 text-white/20"></i>Unanswered: <span id="unanswered-count-display">{{ total_questions|add:answers_count|add:"-" }}</span></span>
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -20,10 +30,16 @@
                     <div id="timer" class="text-xl font-bold text-teal-300 tabular-nums">--:--</div>
                 </div>
                 <div class="flex flex-col gap-1">
-                    <button onclick="finishExam()" 
-                            class="bg-emerald-500/70 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-medium transition duration-200">
-                        <i class="fas fa-check mr-1"></i>Finish
-                    </button>
+                    <form id="finish-form" method="post" action="{% url 'student_portal:finish_bece_exam' attempt.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="question_id" value="{{ question.id }}">
+                        <input type="hidden" name="answer" id="finish-answer">
+                        <input type="hidden" name="current_position" value="{{ current_position }}">
+                        <button type="button" onclick="finishExam()" 
+                                class="bg-emerald-500/70 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-medium transition duration-200">
+                            <i class="fas fa-check mr-1"></i>Finish
+                        </button>
+                    </form>
                     <button onclick="quitExam()" 
                             class="bg-red-500/50 hover:bg-red-500 text-white px-3 py-0.5 rounded-lg text-[8px] font-medium transition duration-200">
                         <i class="fas fa-times mr-1"></i>Quit
@@ -33,64 +49,117 @@
         </div>
 
         <!-- Progress Bar -->
-        <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-3">
+        <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden mb-2">
             <div id="progress-bar" class="h-full rounded-full bg-purple-500 transition-all duration-500" style="width: {{ progress }}%;"></div>
         </div>
 
-        <!-- Question -->
-        <form id="question-form" method="post" action="{% url 'student_portal:submit_bece_answer' attempt.id %}">
-            {% csrf_token %}
-            <input type="hidden" name="question_id" value="{{ question.id }}">
-            <input type="hidden" name="current_position" value="{{ current_position }}">
+        <!-- ============================================================
+        MAIN CONTENT: Sidebar + Question
+        ============================================================ -->
+        <div class="flex gap-3">
             
-            <div class="bg-white/5 border border-white/10 rounded-lg p-4 mb-3">
-                <div class="flex items-start gap-2">
-                    <span class="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full border border-purple-500/20 flex-shrink-0">
-                        Q{{ current_position|add:1 }}
-                    </span>
-                    <div class="flex-1">
-                        <div class="text-[8px] text-white/40 mb-1">{{ current_subject }}</div>
-                        <p class="text-sm text-white mb-3">{{ question.text }}</p>
-                        <div class="space-y-1.5">
-                            {% for option in options %}
-                                <label class="flex items-center gap-2 p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer text-xs text-white/80">
-                                    <input type="radio" name="answer" value="{{ option.label }}" 
-                                           class="w-3 h-3 text-purple-500 focus:ring-purple-500"
-                                           {% if selected_answer == option.label %}checked{% endif %}>
-                                    <span class="font-medium text-purple-300">{{ option.label }}.</span>
-                                    <span>{{ option.text }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
+            <!-- ============================================================
+            LEFT SIDEBAR - Shows ALL questions with numbers
+            ============================================================ -->
+            <div class="hidden md:block w-48 flex-shrink-0">
+                <div class="bg-white/5 border border-white/10 rounded-lg p-2 max-h-[calc(100vh-350px)] overflow-y-auto">
+                    <h4 class="text-[8px] font-bold text-white/40 uppercase tracking-wider mb-2 text-center">
+                        Questions
+                        <span class="text-[7px] text-white/30">({{ total_questions }} total)</span>
+                    </h4>
+                    
+                    <div class="grid grid-cols-5 gap-0.5" id="question-grid">
+                        {% for q in question_data %}
+                            <a href="?q={{ q.position }}" 
+                               id="q-btn-{{ q.position }}"
+                               class="question-nav-btn w-6 h-6 rounded text-[8px] font-bold flex items-center justify-center transition-all duration-200
+                                      {% if q.position == current_position %}ring-2 ring-purple-400 scale-110 shadow-lg shadow-purple-500/30{% endif %}
+                                      {% if q.answered %}bg-purple-500/60 text-white border border-purple-400/50{% else %}bg-white/10 text-white/60 border border-white/10 hover:bg-white/20{% endif %}"
+                               data-answered="{{ q.answered|yesno:'true,false' }}"
+                               title="Question {{ q.number }} - {% if q.answered %}Answered{% else %}Unanswered{% endif %}">
+                                {{ q.number }}
+                            </a>
+                        {% endfor %}
                     </div>
                 </div>
-            </div>
-        </form>
-
-        <!-- Navigation Buttons -->
-        <div class="flex items-center justify-between gap-2">
-            <div class="text-[10px] text-white/40">
-                Question {{ current_position|add:1 }} of {{ total_questions }}
-            </div>
-            <div class="flex gap-2">
-                {% if current_position > 0 %}
-                    <a href="?q={{ current_position|add:-1 }}" 
-                       class="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200">
-                        <i class="fas fa-arrow-left mr-1"></i>Previous
-                    </a>
-                {% endif %}
                 
-                {% if not is_last %}
-                    <button type="button" onclick="submitAnswer()" 
-                            class="btn-primary text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200 shadow-lg shadow-purple-500/25">
-                        Next <i class="fas fa-arrow-right ml-1"></i>
-                    </button>
-                {% else %}
-                    <button type="button" onclick="finishExam()" 
-                            class="bg-emerald-500/70 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200">
-                        <i class="fas fa-check mr-1"></i>Finish Exam
-                    </button>
-                {% endif %}
+                <!-- Legend with Counts -->
+                <div class="mt-2 flex items-center justify-between text-[8px] text-white/40">
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-1">
+                            <span class="w-3 h-3 rounded bg-purple-500/60 border border-purple-400/50"></span> 
+                            <span id="sidebar-answered-count">{{ answers_count }}</span>
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <span class="w-3 h-3 rounded bg-white/10 border border-white/10"></span> 
+                            <span id="sidebar-unanswered-count">{{ total_questions|add:answers_count|add:"-" }}</span>
+                        </span>
+                    </div>
+                    <span class="text-[7px] text-white/20">Total: {{ total_questions }}</span>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            RIGHT SIDE - Question
+            ============================================================ -->
+            <div class="flex-1 min-w-0">
+                
+                <!-- Question Form -->
+                <form id="question-form" method="post" action="{% url 'student_portal:submit_bece_answer' attempt.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="question_id" value="{{ question.id }}">
+                    <input type="hidden" name="current_position" value="{{ current_position }}">
+                    
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-4 mb-3">
+                        <div class="flex items-start gap-2">
+                            <span class="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full border border-purple-500/20 flex-shrink-0">
+                                Q{{ current_position|add:1 }}
+                            </span>
+                            <div class="flex-1">
+                                <div class="text-[8px] text-white/40 mb-1">{{ current_subject }}</div>
+                                <p class="text-sm text-white mb-3">{{ question.text }}</p>
+                                <div class="space-y-1.5">
+                                    {% for option in options %}
+                                        <label class="flex items-center gap-2 p-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200 cursor-pointer text-xs text-white/80">
+                                            <input type="radio" name="answer" value="{{ option.label }}" 
+                                                   class="w-3 h-3 text-purple-500 focus:ring-purple-500"
+                                                   {% if selected_answer == option.label %}checked{% endif %}>
+                                            <span class="font-medium text-purple-300">{{ option.label }}.</span>
+                                            <span>{{ option.text }}</span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Navigation Buttons -->
+                <div class="flex items-center justify-between gap-2">
+                    <div class="text-[10px] text-white/40">
+                        Question {{ current_position|add:1 }} of {{ total_questions }}
+                    </div>
+                    <div class="flex gap-2">
+                        {% if current_position > 0 %}
+                            <button type="button" id="prev-button" onclick="goToPrevious()" 
+                                    class="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200">
+                                <i class="fas fa-arrow-left mr-1"></i>Previous
+                            </button>
+                        {% endif %}
+                        
+                        {% if not is_last %}
+                            <button type="button" onclick="submitAnswer()" 
+                                    class="btn-primary text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200 shadow-lg shadow-purple-500/25">
+                                Next <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        {% else %}
+                            <button type="button" onclick="finishExam()" 
+                                    class="bg-emerald-500/70 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200">
+                                <i class="fas fa-check mr-1"></i>Finish Exam
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -102,7 +171,9 @@
 </form>
 
 <script>
-    // Timer
+    // ============================================================
+    // TIMER
+    // ============================================================
     let timeLeft = parseInt(sessionStorage.getItem('bece_time_left'));
     const totalTime = {{ duration_minutes }} * 60;
     
@@ -149,7 +220,160 @@
         sessionStorage.removeItem('bece_total_time');
     }
 
-    // Submit answer
+    // ============================================================
+    // UPDATE PROGRESS - Uses server data
+    // ============================================================
+    function updateProgress() {
+        // Get the current question ID
+        const currentQuestionId = {{ question.id }};
+        const total = {{ total_questions }};
+        
+        // Count answered questions from the page
+        const answeredRadios = document.querySelectorAll('input[type="radio"]:checked');
+        let answered = answeredRadios.length;
+        
+        // If no radios are checked but we have a selected answer from server, use that
+        if (answered === 0) {
+            // Check if current question has a selected answer from the server
+            const selectedAnswer = "{{ selected_answer|default:'' }}";
+            if (selectedAnswer) {
+                // We need to get the actual count from the server
+                fetchAnsweredCount();
+                return;
+            }
+        }
+        
+        // Update the UI with the counted values
+        updateUI(answered, total);
+    }
+    
+    // ============================================================
+    // FETCH ANSWERED COUNT FROM SERVER
+    // ============================================================
+    function fetchAnsweredCount() {
+        fetch("{% url 'student_portal:get_bece_progress' attempt.id %}")
+            .then(response => response.json())
+            .then(data => {
+                const answered = data.answered || 0;
+                const total = data.total || {{ total_questions }};
+                updateUI(answered, total);
+            })
+            .catch(error => {
+                console.error('❌ Error fetching progress:', error);
+                // Use the server-rendered values
+                const answered = {{ answers_count }};
+                const total = {{ total_questions }};
+                updateUI(answered, total);
+            });
+    }
+    
+    // ============================================================
+    // UPDATE UI - Updates all display elements
+    // ============================================================
+    function updateUI(answered, total) {
+        const unanswered = total - answered;
+        
+        console.log(`📊 Progress: ${answered}/${total} answered, ${unanswered} unanswered`);
+        
+        // 1. Update the answered count display (top header)
+        const answeredDisplay = document.getElementById('answered-count-display');
+        if (answeredDisplay) {
+            answeredDisplay.textContent = answered;
+        }
+        
+        // 2. Update the unanswered count display (top header)
+        const unansweredDisplay = document.getElementById('unanswered-count-display');
+        if (unansweredDisplay) {
+            unansweredDisplay.textContent = unanswered;
+        }
+        
+        // 3. Update sidebar answered count
+        const sidebarAnswered = document.getElementById('sidebar-answered-count');
+        if (sidebarAnswered) {
+            sidebarAnswered.textContent = answered;
+        }
+        
+        // 4. Update sidebar unanswered count
+        const sidebarUnanswered = document.getElementById('sidebar-unanswered-count');
+        if (sidebarUnanswered) {
+            sidebarUnanswered.textContent = unanswered;
+        }
+        
+        // 5. Update progress bar
+        const progressBar = document.getElementById('progress-bar');
+        if (progressBar) {
+            const percentage = (answered / total) * 100;
+            progressBar.style.width = Math.min(percentage, 100) + '%';
+            
+            // Change color based on progress
+            if (percentage >= 80) {
+                progressBar.className = 'h-full rounded-full bg-emerald-500 transition-all duration-500';
+            } else if (percentage >= 40) {
+                progressBar.className = 'h-full rounded-full bg-yellow-500 transition-all duration-500';
+            } else {
+                progressBar.className = 'h-full rounded-full bg-purple-500 transition-all duration-500';
+            }
+        }
+        
+        // 6. Update hidden data for warning modal
+        const hiddenAnswered = document.getElementById('exam-answered-count');
+        const hiddenTotal = document.getElementById('exam-total-questions');
+        const hiddenUnanswered = document.getElementById('exam-unanswered-count');
+        
+        if (hiddenAnswered) hiddenAnswered.textContent = answered;
+        if (hiddenTotal) hiddenTotal.textContent = total;
+        if (hiddenUnanswered) hiddenUnanswered.textContent = unanswered;
+    }
+
+    // ============================================================
+    // AUTO-SAVE ON RADIO CHANGE
+    // ============================================================
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const questionId = {{ question.id }};
+            const answer = this.value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            console.log(`📝 Radio changed: Question ${questionId}, Answer: ${answer}`);
+            
+            // Update progress immediately (optimistic)
+            const total = {{ total_questions }};
+            const answeredRadios = document.querySelectorAll('input[type="radio"]:checked');
+            const currentAnswered = answeredRadios.length;
+            updateUI(currentAnswered, total);
+            
+            // Save via AJAX
+            fetch("{% url 'student_portal:save_bece_answer' attempt.id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `question_id=${questionId}&answer=${answer}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ Answer saved successfully:', questionId, answer);
+                    // Refresh progress from server to ensure accuracy
+                    fetchAnsweredCount();
+                } else {
+                    console.error('❌ Save failed:', data);
+                    // Revert to server data
+                    fetchAnsweredCount();
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error saving answer:', error);
+                // Revert to server data
+                fetchAnsweredCount();
+            });
+        });
+    });
+
+    // ============================================================
+    // SUBMIT ANSWER - Moves to next
+    // ============================================================
     function submitAnswer() {
         const selected = document.querySelector('input[name="answer"]:checked');
         if (!selected) {
@@ -158,32 +382,109 @@
         }
         document.getElementById('question-form').submit();
     }
+
+    // ============================================================
+    // GO TO PREVIOUS - Saves answer then navigates back
+    // ============================================================
+    function goToPrevious() {
+        const selected = document.querySelector('input[name="answer"]:checked');
+        const questionId = {{ question.id }};
+        const answer = selected ? selected.value : '';
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const previousUrl = "?q={{ current_position|add:-1 }}";
+        
+        const prevBtn = document.getElementById('prev-button');
+        
+        if (answer) {
+            if (prevBtn) {
+                prevBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Saving...';
+                prevBtn.disabled = true;
+            }
+            
+            fetch("{% url 'student_portal:save_bece_answer' attempt.id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `question_id=${questionId}&answer=${answer}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ Answer saved successfully, navigating back...');
+                    window.location.href = previousUrl;
+                } else {
+                    throw new Error('Save failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving answer:', error);
+                if (prevBtn) {
+                    prevBtn.innerHTML = '<i class="fas fa-arrow-left mr-1"></i>Previous';
+                    prevBtn.disabled = false;
+                }
+                if (confirm('⚠️ There was an issue saving your answer. Do you want to continue to the previous question anyway?')) {
+                    window.location.href = previousUrl;
+                }
+            });
+        } else {
+            console.log('No answer selected, navigating back directly');
+            window.location.href = previousUrl;
+        }
+    }
     
-    // Finish exam
+    // ============================================================
+    // FINISH EXAM - Always checks for unanswered questions
+    // ============================================================
     function finishExam() {
         const answered = {{ answers_count }};
         const total = {{ total_questions }};
+        const unanswered = total - answered;
         
-        if (answered < total) {
+        console.log(`📊 Progress: ${answered}/${total} answered, ${unanswered} unanswered`);
+        
+        if (unanswered > 0) {
             const confirmSubmit = confirm(
-                `You have answered ${answered} out of ${total} questions.\n\n` +
-                `${total - answered} question(s) remain unanswered.\n\n` +
+                `⚠️ You have ${unanswered} unanswered question(s) out of ${total}.\n\n` +
+                `✅ Answered: ${answered}\n` +
+                `❌ Unanswered: ${unanswered}\n\n` +
                 'Are you sure you want to finish?'
             );
             if (!confirmSubmit) {
+                console.log('❌ Submission cancelled by user');
+                return;
+            }
+        } else {
+            const confirmSubmit = confirm(
+                `✅ You have answered all ${total} questions!\n\n` +
+                'Are you ready to submit your exam?'
+            );
+            if (!confirmSubmit) {
+                console.log('❌ Submission cancelled by user');
                 return;
             }
         }
         
+        console.log('✅ Submitting exam...');
         clearTimer();
         document.getElementById('question-form').submit();
     }
     
-    // Quit exam
+    // ============================================================
+    // QUIT EXAM
+    // ============================================================
     function quitExam() {
+        const answered = {{ answers_count }};
+        const total = {{ total_questions }};
+        const unanswered = total - answered;
+        
         const confirmQuit = confirm(
-            'Are you sure you want to quit this exam?\n\n' +
-            'Your current progress will be saved and you will see your performance analysis.'
+            `⚠️ You are about to quit this exam!\n\n` +
+            `✅ Answered: ${answered}\n` +
+            `❌ Unanswered: ${unanswered}\n\n` +
+            'Your progress will be saved and you will see your performance analysis.\n\n' +
+            'Are you sure you want to quit?'
         );
         if (confirmQuit) {
             clearTimer();
@@ -191,7 +492,9 @@
         }
     }
     
-    // Keyboard shortcuts
+    // ============================================================
+    // KEYBOARD SHORTCUTS
+    // ============================================================
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -202,11 +505,21 @@
         }
     });
 
-    // Start exam
+    // ============================================================
+    // START EXAM - Initialize everything
+    // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
         startTimer();
+        
+        // Initial progress update from server
+        setTimeout(function() {
+            fetchAnsweredCount();
+        }, 200);
+        
         console.log('✅ BECE exam started');
         console.log('⌨️ Enter=Submit Answer | ESC=Quit');
+        console.log('📊 Total Questions: {{ total_questions }}');
+        console.log('📊 Initial Answered: {{ answers_count }}');
     });
 </script>
 
@@ -214,6 +527,12 @@
 STYLES
 ============================================================ -->
 <style>
+    .question-nav-btn {
+        transition: all 0.2s ease;
+    }
+    .question-nav-btn:hover {
+        transform: scale(1.1);
+    }
     .glass-card {
         background: rgba(15, 23, 42, 0.75) !important;
         backdrop-filter: blur(40px) !important;
@@ -221,7 +540,6 @@ STYLES
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
     }
-
     .btn-primary {
         background: linear-gradient(135deg, #0d9488, #0f766e);
         transition: all 0.3s ease;
@@ -231,5 +549,26 @@ STYLES
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(13, 148, 136, 0.4);
     }
+    .max-h-\[calc\(100vh-350px\)\]::-webkit-scrollbar {
+        width: 2px;
+    }
+    .max-h-\[calc\(100vh-350px\)\]::-webkit-scrollbar-thumb {
+        background: rgba(168, 85, 247, 0.4);
+        border-radius: 10px;
+    }
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 </style>
+
+<!-- ============================================================
+HIDDEN DATA FOR WARNING MODAL - ACCURATE COUNTS
+============================================================ -->
+<div style="display: none;">
+    <span id="exam-answered-count">{{ answers_count }}</span>
+    <span id="exam-total-questions">{{ total_questions }}</span>
+    <span id="exam-unanswered-count">{{ total_questions|add:answers_count|add:"-" }}</span>
+</div>
+
 {% endblock %}

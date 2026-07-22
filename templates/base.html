@@ -805,9 +805,10 @@
             // 4. EXAM WARNING ON DASHBOARD NAVIGATION
             // ============================================================
             
-            // Check if we're on an exam page
+            // ✅ FIXED: Check for ALL exam page types including BECE
             const isExamPage = window.location.pathname.includes('/take-exam-session/') || 
-                              window.location.pathname.includes('/take-exam/');
+                              window.location.pathname.includes('/take-exam/') ||
+                              window.location.pathname.includes('/take-bece-exam-session/');
             
             // Get exam session/attempt ID from URL
             let examId = null;
@@ -818,6 +819,12 @@
                 if (match) {
                     examId = match[1];
                     examType = 'session';
+                }
+            } else if (window.location.pathname.includes('/take-bece-exam-session/')) {
+                const match = window.location.pathname.match(/\/take-bece-exam-session\/(\d+)/);
+                if (match) {
+                    examId = match[1];
+                    examType = 'bece';
                 }
             } else if (window.location.pathname.includes('/take-exam/')) {
                 const match = window.location.pathname.match(/\/take-exam\/(\d+)/);
@@ -914,6 +921,8 @@
                 let progressUrl = '';
                 if (examType === 'session') {
                     progressUrl = `/student-portal/get-session-progress/${examId}/`;
+                } else if (examType === 'bece') {
+                    progressUrl = `/student-portal/get-bece-progress/${examId}/`;
                 } else if (examType === 'attempt') {
                     progressUrl = `/student-portal/get-progress/${examId}/`;
                 }
@@ -959,6 +968,13 @@
                     } else {
                         window.location.href = `/student-portal/finish-exam-session/${examId}/`;
                     }
+                } else if (examId && examType === 'bece') {
+                    const finishForm = document.getElementById('finish-form');
+                    if (finishForm) {
+                        finishForm.submit();
+                    } else {
+                        window.location.href = `/student-portal/finish-bece-exam/${examId}/`;
+                    }
                 } else if (examId && examType === 'attempt') {
                     const finishForm = document.getElementById('finish-form');
                     if (finishForm) {
@@ -982,6 +998,13 @@
                         quitForm.submit();
                     } else {
                         window.location.href = `/student-portal/quit-exam-session/${examId}/`;
+                    }
+                } else if (examId && examType === 'bece') {
+                    const quitForm = document.getElementById('quit-form');
+                    if (quitForm) {
+                        quitForm.submit();
+                    } else {
+                        window.location.href = `/student-portal/quit-bece-exam/${examId}/`;
                     }
                 } else if (examId && examType === 'attempt') {
                     const quitForm = document.getElementById('quit-form');

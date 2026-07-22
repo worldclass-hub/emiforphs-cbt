@@ -174,7 +174,6 @@ def start_bece_exam(request):
     request.session['bece_subjects'] = selected_subject_ids
     request.session['bece_years'] = selected_years
     
-    # ✅ FIXED: Redirect to take_bece_exam (which creates the attempt)
     return redirect('student_portal:take_bece_exam')
 
 @login_required
@@ -260,12 +259,27 @@ def take_bece_exam_session(request, attempt_id):
         {'label': 'D', 'text': question.option_d},
     ]
     
+    # Build question data for sidebar
+    question_data = []
+    for idx, q_id in enumerate(question_ids):
+        subject = question_subject_map.get(str(idx), 'Unknown')
+        answered = str(q_id) in attempt.answers
+        question_data.append({
+            'position': idx,
+            'number': idx + 1,
+            'subject': subject,
+            'answered': answered,
+            'question_id': q_id,
+        })
+    
     context = {
         'attempt': attempt,
         'question': question,
         'options': options,
         'current_position': current_position,
         'total_questions': total_questions,
+        'question_ids': question_ids,
+        'question_data': question_data,
         'current_subject': current_subject,
         'selected_answer': selected_answer,
         'is_last': current_position == total_questions - 1,
@@ -274,6 +288,33 @@ def take_bece_exam_session(request, attempt_id):
         'duration_minutes': 45,  # BECE default duration
     }
     return render(request, 'student_portal/take_bece_exam.html', context)
+
+@login_required
+def save_bece_answer(request, attempt_id):
+    """Save BECE answer via AJAX"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+    
+    attempt = get_object_or_404(StudentAttempt, id=attempt_id, student=request.user)
+    question_id = request.POST.get('question_id')
+    answer = request.POST.get('answer')
+    
+    if question_id and answer:
+        attempt.answers[question_id] = answer
+        attempt.save()
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'error': 'Missing data'}, status=400)
+
+@login_required
+def get_bece_progress(request, attempt_id):
+    """Get BECE progress via AJAX"""
+    attempt = get_object_or_404(StudentAttempt, id=attempt_id, student=request.user)
+    return JsonResponse({
+        'answered': len(attempt.answers),
+        'total': attempt.total_questions,
+        'unanswered': attempt.total_questions - len(attempt.answers)
+    })
 
 @login_required
 def submit_bece_answer(request, attempt_id):
@@ -474,6 +515,33 @@ def take_exam(request, attempt_id):
         'answers': json.dumps(attempt.answers),
     }
     return render(request, 'student_portal/take_exam.html', context)
+
+@login_required
+def save_answer(request, attempt_id):
+    """Save answer via AJAX"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+    
+    attempt = get_object_or_404(StudentAttempt, id=attempt_id, student=request.user)
+    question_id = request.POST.get('question_id')
+    answer = request.POST.get('answer')
+    
+    if question_id and answer:
+        attempt.answers[question_id] = answer
+        attempt.save()
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'error': 'Missing data'}, status=400)
+
+@login_required
+def get_progress(request, attempt_id):
+    """Get progress for an attempt via AJAX"""
+    attempt = get_object_or_404(StudentAttempt, id=attempt_id, student=request.user)
+    return JsonResponse({
+        'answered': len(attempt.answers),
+        'total': attempt.total_questions,
+        'unanswered': attempt.total_questions - len(attempt.answers)
+    })
 
 @login_required
 def submit_exam(request, attempt_id):

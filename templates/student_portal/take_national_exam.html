@@ -30,7 +30,7 @@
                     <div id="timer" class="text-xl font-bold text-teal-300 tabular-nums">--:--</div>
                 </div>
                 <div class="flex flex-col gap-1">
-                    <button onclick="finishExam()" 
+                    <button type="button" onclick="finishExam()" 
                             class="bg-emerald-500/70 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg text-[10px] font-medium transition duration-200">
                         <i class="fas fa-check mr-1"></i>Finish
                     </button>
@@ -47,9 +47,7 @@
             <div id="progress-bar" class="h-full rounded-full bg-teal-500 transition-all duration-500" style="width: {{ progress }}%;"></div>
         </div>
 
-        <!-- ============================================================
-        SUBJECT TABS - Top Navigation
-        ============================================================ -->
+        <!-- Subject Tabs -->
         <div class="flex flex-wrap gap-1.5 mb-3 pb-2 border-b border-white/10">
             {% for subject in subject_data %}
                 <a href="?q={{ subject.start_position }}" 
@@ -63,21 +61,16 @@
             {% endfor %}
         </div>
 
-        <!-- ============================================================
-        MAIN CONTENT: Sidebar + Question
-        ============================================================ -->
+        <!-- Main Content -->
         <div class="flex gap-3">
             
-            <!-- ============================================================
-            LEFT SIDEBAR - Shows ONLY questions for the current subject
-            ============================================================ -->
+            <!-- Sidebar -->
             <div class="hidden md:block w-48 flex-shrink-0">
                 <div class="bg-white/5 border border-white/10 rounded-lg p-2 max-h-[calc(100vh-350px)] overflow-y-auto">
                     <h4 class="text-[8px] font-bold text-white/40 uppercase tracking-wider mb-2 text-center">
                         {{ current_subject }}
                         <span class="text-[7px] text-white/30">({{ current_subject_questions|length }} questions)</span>
                     </h4>
-                    
                     <div class="grid grid-cols-5 gap-0.5">
                         {% for q in current_subject_questions %}
                             <a href="?q={{ q.position }}" 
@@ -90,8 +83,6 @@
                         {% endfor %}
                     </div>
                 </div>
-                
-                <!-- Legend with Counts -->
                 <div class="mt-2 flex items-center justify-between text-[8px] text-white/40">
                     <div class="flex items-center gap-3">
                         <span class="flex items-center gap-1">
@@ -107,14 +98,9 @@
                 </div>
             </div>
 
-            <!-- ============================================================
-            RIGHT SIDE - Question
-            ============================================================ -->
+            <!-- Question -->
             <div class="flex-1 min-w-0">
                 
-                <!-- ============================================================
-                MESSAGE: Last question in subject
-                ============================================================ -->
                 {% if is_last_in_subject and not is_last %}
                     <div class="text-center text-yellow-300 text-[10px] bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-2 mb-2">
                         <i class="fas fa-info-circle mr-1"></i>
@@ -122,7 +108,7 @@
                     </div>
                 {% endif %}
 
-                <!-- Question -->
+                <!-- Question Form -->
                 <form id="question-form" method="post" action="{% url 'student_portal:submit_national_answer' attempt.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="question_id" value="{{ question.id }}">
@@ -158,10 +144,10 @@
                     </div>
                     <div class="flex gap-2">
                         {% if current_position > 0 %}
-                            <a href="?q={{ current_position|add:-1 }}" 
-                               class="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200">
+                            <button type="button" id="prev-button" onclick="goToPrevious()" 
+                                    class="bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-lg text-[10px] font-medium transition duration-200">
                                 <i class="fas fa-arrow-left mr-1"></i>Previous
-                            </a>
+                            </button>
                         {% endif %}
                         
                         {% if not is_last %}
@@ -183,30 +169,28 @@
 </div>
 
 <!-- Hidden form for quitting -->
-<form id="quit-form" method="post" action="{% url 'student_portal:quit_exam' attempt.id %}" style="display: none;">
+<form id="quit-form" method="post" action="{% url 'student_portal:quit_national_exam' attempt.id %}" style="display: none;">
     {% csrf_token %}
 </form>
 
 <script>
     // ============================================================
-    // TIMER - PERSISTENT ACROSS PAGE LOADS
+    // TIMER
     // ============================================================
-    let timeLeft = parseInt(sessionStorage.getItem('exam_time_left'));
+    let timeLeft = parseInt(sessionStorage.getItem('national_exam_time_left'));
     const totalTime = {{ duration_minutes }} * 60;
     
-    // If no time stored or time is 0, set initial time
     if (isNaN(timeLeft) || timeLeft <= 0) {
         timeLeft = totalTime;
-        sessionStorage.setItem('exam_time_left', timeLeft);
-        sessionStorage.setItem('exam_total_time', totalTime);
+        sessionStorage.setItem('national_exam_time_left', timeLeft);
+        sessionStorage.setItem('national_exam_total_time', totalTime);
     }
     
-    // If the stored time is different from the exam duration, reset (e.g., new exam)
-    const storedTotal = parseInt(sessionStorage.getItem('exam_total_time'));
+    const storedTotal = parseInt(sessionStorage.getItem('national_exam_total_time'));
     if (storedTotal !== totalTime) {
         timeLeft = totalTime;
-        sessionStorage.setItem('exam_time_left', timeLeft);
-        sessionStorage.setItem('exam_total_time', totalTime);
+        sessionStorage.setItem('national_exam_time_left', timeLeft);
+        sessionStorage.setItem('national_exam_total_time', totalTime);
     }
     
     let timerInterval = null;
@@ -220,46 +204,88 @@
             
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                sessionStorage.removeItem('exam_time_left');
+                sessionStorage.removeItem('national_exam_time_left');
                 alert('Time is up! Your exam will be submitted automatically.');
                 finishExam();
                 return;
             }
             timeLeft--;
-            sessionStorage.setItem('exam_time_left', timeLeft);
+            sessionStorage.setItem('national_exam_time_left', timeLeft);
         }
         
         timerInterval = setInterval(updateTimer, 1000);
         updateTimer();
     }
     
-    // Clear timer when exam is finished or quit
     function clearTimer() {
         clearInterval(timerInterval);
-        sessionStorage.removeItem('exam_time_left');
-        sessionStorage.removeItem('exam_total_time');
+        sessionStorage.removeItem('national_exam_time_left');
+        sessionStorage.removeItem('national_exam_total_time');
     }
-    
+
     // ============================================================
-    // UPDATE COUNTS
+    // UPDATE COUNTS FROM SERVER
     // ============================================================
     function updateCounts() {
-        const answered = document.querySelectorAll('input[type="radio"]:checked').length;
-        const total = {{ total_questions }};
-        const unanswered = total - answered;
-        
-        document.getElementById('answered-count-display').textContent = answered;
-        document.getElementById('unanswered-count-display').textContent = unanswered;
-        document.getElementById('sidebar-answered-count').textContent = {{ current_subject_answered }};
-        document.getElementById('sidebar-unanswered-count').textContent = {{ current_subject_unanswered }};
-        
-        // Update progress bar
-        const progress = (answered / total) * 100;
-        document.getElementById('progress-bar').style.width = progress + '%';
+        fetch("{% url 'student_portal:get_national_progress' attempt.id %}")
+            .then(response => response.json())
+            .then(data => {
+                const answered = data.answered;
+                const total = data.total;
+                const unanswered = total - answered;
+                
+                document.getElementById('answered-count-display').textContent = answered;
+                document.getElementById('unanswered-count-display').textContent = unanswered;
+                document.getElementById('sidebar-answered-count').textContent = {{ current_subject_answered }};
+                document.getElementById('sidebar-unanswered-count').textContent = {{ current_subject_unanswered }};
+                
+                const percentage = (answered / total) * 100;
+                document.getElementById('progress-bar').style.width = percentage + '%';
+            })
+            .catch(() => {
+                // Fallback: count from page
+                const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+                const total = {{ total_questions }};
+                const unanswered = total - answered;
+                
+                document.getElementById('answered-count-display').textContent = answered;
+                document.getElementById('unanswered-count-display').textContent = unanswered;
+                
+                const percentage = (answered / total) * 100;
+                document.getElementById('progress-bar').style.width = percentage + '%';
+            });
     }
-    
+
     // ============================================================
-    // SUBMIT ANSWER - MOVES TO NEXT QUESTION
+    // AUTO-SAVE ON RADIO CHANGE
+    // ============================================================
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const questionId = {{ question.id }};
+            const answer = this.value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            fetch("{% url 'student_portal:save_national_answer' attempt.id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `question_id=${questionId}&answer=${answer}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ Answer saved:', questionId, answer);
+                    updateCounts();
+                }
+            })
+            .catch(error => console.error('Error saving answer:', error));
+        });
+    });
+
+    // ============================================================
+    // SUBMIT ANSWER - Moves to next
     // ============================================================
     function submitAnswer() {
         const selected = document.querySelector('input[name="answer"]:checked');
@@ -267,52 +293,120 @@
             alert('Please select an answer before proceeding.');
             return;
         }
+        document.getElementById('question-form').submit();
+    }
+
+    // ============================================================
+    // GO TO PREVIOUS - Saves answer then navigates back
+    // ============================================================
+    function goToPrevious() {
+        const selected = document.querySelector('input[name="answer"]:checked');
+        const questionId = {{ question.id }};
+        const answer = selected ? selected.value : '';
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const previousUrl = "?q={{ current_position|add:-1 }}";
         
-        const form = document.getElementById('question-form');
-        form.submit();
+        const prevBtn = document.getElementById('prev-button');
+        
+        if (answer) {
+            if (prevBtn) {
+                prevBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Saving...';
+                prevBtn.disabled = true;
+            }
+            
+            fetch("{% url 'student_portal:save_national_answer' attempt.id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `question_id=${questionId}&answer=${answer}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('✅ Answer saved successfully, navigating back...');
+                    window.location.href = previousUrl;
+                } else {
+                    throw new Error('Save failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving answer:', error);
+                if (prevBtn) {
+                    prevBtn.innerHTML = '<i class="fas fa-arrow-left mr-1"></i>Previous';
+                    prevBtn.disabled = false;
+                }
+                if (confirm('⚠️ There was an issue saving your answer. Do you want to continue to the previous question anyway?')) {
+                    window.location.href = previousUrl;
+                }
+            });
+        } else {
+            console.log('No answer selected, navigating back directly');
+            window.location.href = previousUrl;
+        }
     }
     
     // ============================================================
-    // FINISH EXAM - Clear timer
+    // FINISH EXAM - Always checks for unanswered questions
     // ============================================================
     function finishExam() {
         const answered = {{ answers_count }};
         const total = {{ total_questions }};
+        const unanswered = total - answered;
         
-        if (answered < total) {
+        console.log(`📊 Progress: ${answered}/${total} answered, ${unanswered} unanswered`);
+        
+        if (unanswered > 0) {
             const confirmSubmit = confirm(
-                `You have answered ${answered} out of ${total} questions.\n\n` +
-                `${total - answered} question(s) remain unanswered.\n\n` +
+                `⚠️ You have ${unanswered} unanswered question(s) out of ${total}.\n\n` +
+                `✅ Answered: ${answered}\n` +
+                `❌ Unanswered: ${unanswered}\n\n` +
                 'Are you sure you want to finish?'
             );
             if (!confirmSubmit) {
+                console.log('❌ Submission cancelled by user');
+                return;
+            }
+        } else {
+            const confirmSubmit = confirm(
+                `✅ You have answered all ${total} questions!\n\n` +
+                'Are you ready to submit your exam?'
+            );
+            if (!confirmSubmit) {
+                console.log('❌ Submission cancelled by user');
                 return;
             }
         }
         
-        // Clear timer
+        console.log('✅ Submitting exam...');
         clearTimer();
-        
         const form = document.getElementById('question-form');
         const finishInput = document.createElement('input');
         finishInput.type = 'hidden';
         finishInput.name = 'finish';
         finishInput.value = 'true';
         form.appendChild(finishInput);
-        form.action = "{% url 'student_portal:finish_exam' attempt.id %}";
+        form.action = "{% url 'student_portal:finish_national_exam' attempt.id %}";
         form.submit();
     }
     
     // ============================================================
-    // QUIT EXAM - Clear timer
+    // QUIT EXAM
     // ============================================================
     function quitExam() {
+        const answered = {{ answers_count }};
+        const total = {{ total_questions }};
+        const unanswered = total - answered;
+        
         const confirmQuit = confirm(
-            'Are you sure you want to quit this exam?\n\n' +
-            'Your current progress will be saved and you will see your performance analysis.'
+            `⚠️ You are about to quit this exam!\n\n` +
+            `✅ Answered: ${answered}\n` +
+            `❌ Unanswered: ${unanswered}\n\n` +
+            'Your progress will be saved and you will see your performance analysis.\n\n' +
+            'Are you sure you want to quit?'
         );
         if (confirmQuit) {
-            // Clear timer
             clearTimer();
             document.getElementById('quit-form').submit();
         }
@@ -330,19 +424,18 @@
             quitExam();
         }
     });
-    
+
     // ============================================================
     // START EXAM
     // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
         startTimer();
         updateCounts();
+        setInterval(updateCounts, 5000);
         
         console.log('✅ National exam started');
         console.log('⌨️ Enter=Submit Answer | ESC=Quit');
         console.log('📊 Current Subject: {{ current_subject }}');
-        console.log('📝 Questions in subject: {{ current_subject_questions|length }}');
-        console.log('⏱️ Time remaining: ' + Math.floor(timeLeft / 60) + ':' + String(timeLeft % 60).padStart(2, '0'));
     });
 </script>
 
@@ -379,7 +472,6 @@ STYLES
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(13, 148, 136, 0.4);
     }
-    /* Scrollbar for sidebar */
     .max-h-\[calc\(100vh-350px\)\]::-webkit-scrollbar {
         width: 2px;
     }
@@ -387,5 +479,19 @@ STYLES
         background: rgba(13, 148, 136, 0.4);
         border-radius: 10px;
     }
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 </style>
+
+<!-- ============================================================
+HIDDEN DATA FOR WARNING MODAL - ACCURATE COUNTS
+============================================================ -->
+<div style="display: none;">
+    <span id="exam-answered-count">{{ answers_count }}</span>
+    <span id="exam-total-questions">{{ total_questions }}</span>
+    <span id="exam-unanswered-count">{{ unanswered_count }}</span>
+</div>
+
 {% endblock %}
